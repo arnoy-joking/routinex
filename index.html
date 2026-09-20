@@ -1,831 +1,2999 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-  <!-- Existing scripts for video and XLSX handling -->
-  <script type="text/javascript">
-    var gk_isXlsx = false;
-    var gk_xlsxFileLookup = {};
-    var gk_fileData = {};
-    function filledCell(cell) {
-      return cell !== '' && cell != null;
-    }
-    function loadFileData(filename) {
-      if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-        try {
-          var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-          var firstSheetName = workbook.SheetNames[0];
-          var worksheet = workbook.Sheets[firstSheetName];
-          var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-          var filteredData = jsonData.filter(row => row.some(filledCell));
-          var headerRowIndex = filteredData.findIndex((row, index) =>
-            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-          );
-          if (headerRowIndex === -1 || headerRowIndex > 25) headerRowIndex = 0;
-          var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
-          csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-          return csv;
-        } catch (e) {
-          console.error(e);
-          return "";
-        }
-      }
-      return gk_fileData[filename] || "";
-    }
-  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoutineX • Life OS — Premium</title>
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/14991/14991808.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800;9..144,900&family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060608;
+  --surface:#0f0f12;
+  --surface-2:#141418;
+  --card:#16161c;
+  --card2:#1c1c22;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --border3:rgba(255,255,255,0.18);
+  --text:#f8f8fa;
+  --text2:#e8e8ec;
+  --muted:#8b8ba0;
+  --muted2:#6e6e82;
+  --accent:#00e5a0;
+  --accent-soft:rgba(0,229,160,0.14);
+  --accent2:#7c6af7;
+  --accent2-soft:rgba(124,106,247,0.14);
+  --accent3:#f7a06a;
+  --coin:#fbbf24;
+  --danger:#ff5a5a;
+  --radius-lg:20px;
+  --radius-md:14px;
+  --radius-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+html,body{height:100%}
+body{
+  font-family:'Geist','Inter','Noto Sans Bengali',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overscroll-behavior-y:contain;
+}
+/* premium background — LIGHTWEIGHT (removed heavy grid + mask) */
+body::before{
+  content:'';
+  position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(700px 420px at 50% -10%, rgba(124,106,247,0.09) 0%, transparent 60%),
+    linear-gradient(to bottom, #070709 0%, #060608 100%);
+  pointer-events:none;
+  will-change:transform;
+  transform:translateZ(0);
+}
+/* removed body::after grid — huge paint cost */
 
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>পড় মন দিয়া</title>
-  <link rel="icon" href="https://cdn-icons-png.freepik.com/512/7856/7856382.png" type="image/png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link href="https://cdn.plyr.io/3.7.8/plyr.css" rel="stylesheet">
- <style>
-  /* Base Styles */
-  html, body {
-    margin: 0;
-    padding: 0;
-    /* Use a clean, sans-serif font */
-    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #171717; /* Very dark background */
-    color: #e0e0e0; /* Light text color */
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-  }
-
-  /* Header/Navbar Area */
-  header {
-    background-color: #171717; /* Background remains dark */
-    /* Remove padding and margin specific to the header to make it full width */
-    padding: 0;
-    margin: 0;
-    max-width: 100%;
-    width: 100%;
-    box-sizing: border-box;
-    /* Add padding for the content inside */
-    padding: 1rem 2rem; 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #282828; /* Subtle bottom border */
-  }
-  
-  /* Logo/Title area styling (e.g., if there's a title with specific colors) */
-  .logo-text {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #f0f0f0;
-    display: flex;
-    align-items: center;
-  }
-
-  /* Main Content Layout (simulating a two-column or split layout) */
-  .main-content-container {
-    display: flex;
-    gap: 1.5rem;
-    padding: 1.5rem 2rem;
-    max-width: 1200px; /* Max width for content */
-    margin: 0 auto;
-  }
-
-  /* Left Panel: Live Class (Video Player and Buttons) */
-  .live-class-panel {
-    flex: 3; /* Takes up more space */
-  }
-
-  /* Right Panel: Class List */
-  .class-list-panel {
-    flex: 1.2; /* Takes up less space */
-    min-width: 300px;
-    background-color: #212121; /* Slightly lighter background for the list container */
-    border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Card/Container styles (e.g., the video player container) */
-  .bg-white {
-    /* Used for the overall container in the image, e.g., surrounding the player */
-    background-color: #212121 !important; 
-    border: none; /* No border visible in the image */
-    border-radius: 0.5rem;
-    padding: 0; /* Remove internal padding to allow player to touch edges */
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  /* Headings for the sections */
-  .section-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #55aaff; /* Blue color for the section title (Live Class / Class List) */
-    display: flex;
-    align-items: center;
-    padding: 0 1rem 0.5rem;
-  }
-  
-  .class-list-panel .section-title {
-    padding: 0 0 0.5rem 0; /* Adjust padding for the list panel */
-  }
-
-  /* Text Colors/Sizes */
-  .text-gray-100, .text-lg {
-    color: #e0e0e0 !important;
-  }
-
-  /* Class List Styles */
-  #classList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  #classList li {
-    color: #e0e0e0;
-    padding: 0.75rem 1rem;
-    border-radius: 0.4rem;
-    background-color: transparent; /* Default transparent */
-    margin-bottom: 0.3rem;
-    transition: background-color 0.2s ease;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.95rem;
-    font-weight: 500;
-  }
-  
-  /* Style for the active/selected class item */
-  #classList li:first-child { 
-    background-color: #0b1f3c; /* Dark blue background for selected item */
-    color: #55aaff; /* Blue text color for selected item */
-  }
-
-  #classList li:not(:first-child):hover {
-    background-color: #2b2b2b; /* Hover for non-selected items */
-  }
-  
-  .list-item-icon {
-    color: #e0e0e0; /* Default icon color */
-  }
-  
-  #classList li:first-child .list-item-icon {
-    color: #55aaff; /* Blue icon color for selected item */
-  }
-
-
-  /* Button Styles (Download PDF & Open on YouTube) */
-  .button-group {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem;
-  }
-
-  .download-pdf-button, .open-youtube-button {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.4rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    border: none;
-    font-size: 1rem;
-  }
-
-  .download-pdf-button {
-    background-color: #38a169; /* Green background */
-    color: #fff;
-  }
-  
-  .download-pdf-button:hover {
-    background-color: #2f855a;
-  }
-
-  .open-youtube-button {
-    background-color: #55aaff; /* Blue background */
-    color: #fff;
-  }
-  
-  .open-youtube-button:hover {
-    background-color: #4499ee;
-  }
-
-  /* Ensure video player container matches background */
-  .plyr {
-    border-radius: 0.5rem;
-    background-color: #212121; /* Match main container background */
-    overflow: hidden;
-    max-width: 100%;
-  }
-
-  /* Footer/Quote Area */
-  .footer-quotes {
-    font-size: 0.85rem;
-    color: #888;
-    text-align: right; /* Match alignment in the image */
-    margin-top: 0;
-    padding: 0 1rem 1rem;
-  }
-
-  .footer-quotes p {
-    margin: 0.4rem 0;
-  }
-
-  /* Hide elements not present in the image */
-  header {
-    /* Assuming header has the logo and the quote on the right */
-    background-color: #171717;
-  }
-  
-  .bg-blue-200 { /* Not explicitly visible in the final desired look */
-    display: none !important;
-  }
-  
-  .text-red-500 {
-    color: #e74c3c; /* A deep red for contrast, if used */
-  }
-  
-  .shadow-md {
-    /* Use for any remaining general shadow/border elements */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  h1, h2, footer { /* Hide or style elements not matching the image's structure */
-    display: none; /* Hide generic headers/footers if they clash with the image */
-  }
-
-  /* Media Queries for Responsiveness */
-  @media (max-width: 1024px) {
-    .main-content-container {
-      flex-direction: column;
-      padding: 1rem;
-    }
-    
-    .live-class-panel, .class-list-panel {
-      flex: none;
-      min-width: unset;
-    }
-  }
-
-  @media (max-width: 768px) {
-    header {
-      padding: 0.75rem 1rem;
-    }
-    
-    .button-group {
-      flex-direction: column;
-    }
-
-    .download-pdf-button, .open-youtube-button {
-      font-size: 0.9rem;
-      padding: 0.6rem 1rem;
-    }
-    
-    .section-title {
-      padding: 0 0.5rem 0.5rem;
-    }
-  }
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:99px}
+::selection{background:rgba(0,229,160,0.3)}
+/* typography */
+.font-display{font-family:'Fraunces','Geist',serif;font-weight:800;letter-spacing:-0.03em}
+.font-mono{font-family:'Geist Mono',monospace}
+/* cards — NO backdrop blur, GPU layer */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  box-shadow:0 2px 16px rgba(0,0,0,0.22);
+  contain:layout paint;
+  transform:translateZ(0);
+  will-change:transform;
+}
+.card-hover{transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;cursor:pointer}
+.card-hover:hover{border-color:var(--border2);transform:translateY(-1px) translateZ(0);box-shadow:0 8px 24px rgba(0,0,0,0.28)}
+.card-elevated{
+  background:var(--card2);
+  border-color:rgba(255,255,255,0.10);
+}
+/* inputs — no blur */
+.inp{
+  width:100%; background:#1a1a20;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; padding:.72rem 1rem; color:var(--text);
+  font-family:inherit; font-size:.9rem; outline:none; transition:border-color .18s, background .18s, box-shadow .18s;
+}
+.inp:focus{border-color:rgba(0,229,160,0.5); background:#1e1e26; box-shadow:0 0 0 3px rgba(0,229,160,0.1)}
+.inp::placeholder{color:var(--muted2)}
+select.inp{cursor:pointer}
+/* buttons — only transform + opacity (compositor) */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.45rem;
+  padding:.62rem 1.15rem; border-radius:999px;
+  font-family:inherit; font-size:.85rem; font-weight:600;
+  cursor:pointer; border:none; transition:transform .14s ease, background .14s ease, border-color .14s ease, opacity .14s ease;
+  white-space:nowrap; letter-spacing:-0.01em;
+  will-change:transform;
+  transform:translateZ(0);
+}
+.btn:active{transform:scale(0.97) translateZ(0)}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none}
+.btn-accent{background:var(--text); color:#000}
+.btn-accent:hover{background:#fff; transform:translateY(-1px) translateZ(0)}
+.btn-accent2{background:var(--accent2); color:#fff}
+.btn-accent2:hover{filter:brightness(1.08); transform:translateY(-1px) translateZ(0)}
+.btn-ghost{background:rgba(255,255,255,0.06); color:var(--text); border:1px solid rgba(255,255,255,0.08)}
+.btn-ghost:hover{background:rgba(255,255,255,0.10); border-color:rgba(255,255,255,0.14); transform:translateY(-1px) translateZ(0)}
+.btn-danger{background:rgba(255,90,90,0.10); color:var(--danger); border:1px solid rgba(255,90,90,0.18)}
+.btn-danger:hover{background:rgba(255,90,90,0.16)}
+.btn-xs{padding:.38rem .75rem; font-size:.75rem; border-radius:999px}
+.btn-sm{padding:.5rem .95rem; font-size:.8rem}
+.btn-full{width:100%}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:50%;flex-shrink:0}
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:.68rem;font-weight:700;letter-spacing:.02em;border:1px solid transparent}
+.badge-accent{background:var(--accent-soft);color:var(--accent);border-color:rgba(0,229,160,0.18)}
+.badge-accent2{background:var(--accent2-soft);color:var(--accent2);border-color:rgba(124,106,247,0.18)}
+.badge-muted{background:rgba(255,255,255,0.06);color:var(--muted);border-color:var(--border)}
+.badge-gold{background:rgba(251,191,36,0.12);color:var(--coin);border-color:rgba(251,191,36,0.2)}
+/* top header — lightweight blur only here, with GPU */
+#top-header{
+  position:fixed; top:0; left:0; right:0; z-index:40;
+  height:60px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px;
+  background:rgba(10,10,12,0.92);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  transform:translateZ(0);
+  will-change:transform;
+  contain:layout paint;
+}
+#top-header .brand{font-family:'Fraunces',serif;font-weight:900;font-size:1.18rem;letter-spacing:-0.04em;display:flex;align-items:center;gap:9px}
+#top-header .brand-dot{width:28px;height:28px;border-radius:9px;background:var(--text);color:#000;display:grid;place-items:center;font-size:.85rem;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+@media(min-width:768px){#top-header{padding:0 28px;height:64px}}
+/* bottom nav — floating dock lightweight */
+#bottom-nav{
+  display:flex; position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateZ(0);
+  background:rgba(18,18,22,0.96);
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:999px; z-index:50;
+  padding:6px 6px; gap:2px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.45);
+  max-width:calc(100vw - 24px);
+  will-change:transform;
+  contain:layout paint style;
+}
+.bnav-item{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 14px; cursor:pointer; border-radius:999px;
+  font-size:.62rem; font-weight:700; color:var(--muted); transition:background .14s ease, color .14s ease, transform .14s ease;
+  -webkit-tap-highlight-color:transparent; min-width:64px;
+  will-change:transform;
+}
+.bnav-item i{font-size:1.05rem; transition:transform .14s ease}
+.bnav-item.active{background:var(--text); color:#000}
+.bnav-item.active i{transform:translateY(-1px)}
+.bnav-item:not(.active):hover{color:var(--text2); background:rgba(255,255,255,0.06)}
+@media(max-width:480px){
+  .bnav-item{padding:7px 10px; min-width:54px; font-size:.58rem}
+  #bottom-nav{bottom:12px; padding:5px}
+}
+@media(min-width:900px){
+  #bottom-nav{left:50%; transform:translateX(-50%) translateZ(0)}
+}
+/* main — smooth scroll, GPU */
+#main-content{
+  margin-left:0; min-height:100vh;
+  padding:76px 16px 96px;
+  max-width:980px; margin:0 auto;
+  transform:translateZ(0);
+}
+@media(min-width:768px){#main-content{padding:84px 24px 100px}}
+@media(min-width:1100px){#main-content{padding:88px 32px 100px}}
+/* views — fast fade only, no heavy translate */
+.view{display:none; will-change:opacity}
+.view.active{display:block; animation:viewIn .18s ease-out both}
+@keyframes viewIn{from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)}}
+/* auth */
+#auth-screen{
+  position:fixed; inset:0; z-index:200; background:var(--bg);
+  display:flex; align-items:center; justify-content:center; padding:1.5rem;
+}
+#auth-screen::before{
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(600px 400px at 20% 15%, rgba(124,106,247,0.16) 0%, transparent 70%),
+    radial-gradient(700px 500px at 85% 85%, rgba(0,229,160,0.10) 0%, transparent 70%);
+  pointer-events:none;
+}
+.auth-card{
+  width:100%; max-width:420px; position:relative;
+  background:#141418;
+  border:1px solid rgba(255,255,255,0.09);
+  border-radius:24px;
+  padding:28px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.45);
+}
+.auth-divider{display:flex;align-items:center;gap:.75rem;color:var(--muted);font-size:.78rem;margin:6px 0}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08)}
+/* timeline — lightweight */
+.timeline-wrap{position:relative; contain:layout paint}
+.timeline-wrap::before{
+  content:''; position:absolute; left:19px; top:8px; bottom:8px; width:2px;
+  background:linear-gradient(to bottom, var(--accent) 0%, var(--accent2) 55%, rgba(255,255,255,0.06) 100%);
+  opacity:.14; border-radius:99px;
+}
+.slot-row{position:relative; padding-left:54px; padding-bottom:16px; contain:layout paint}
+.slot-check{
+  position:absolute; left:0; top:4px; width:40px; height:40px; border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.12); background:#1a1a20;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:2; transition:transform .14s ease, border-color .14s ease, background .14s ease;
+  flex-shrink:0;
+  will-change:transform;
+}
+.slot-check:hover{border-color:rgba(255,255,255,0.22); transform:scale(1.04) translateZ(0); background:#22222a}
+.slot-check.done{background:var(--accent); border-color:var(--accent); color:#000; transform:scale(1.02) translateZ(0)}
+.slot-check.done i{color:#000}
+.slot-card{
+  background:#1a1a20;
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:16px; padding:14px 16px; cursor:pointer; transition:transform .14s ease, border-color .14s ease, background .14s ease;
+  position:relative; overflow:hidden;
+  contain:layout paint;
+  will-change:transform;
+  transform:translateZ(0);
+}
+.slot-card::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--slot-color, transparent); opacity:.9;
+}
+.slot-card:hover{border-color:rgba(255,255,255,0.13); background:#21212a; transform:translateY(-1px) translateZ(0)}
+.slot-card.done{border-color:rgba(0,229,160,0.28); background:rgba(0,229,160,0.07)}
+.slot-card.done::before{background:var(--accent)!important}
+/* stat grid premium — remove heavy radial glow */
+.stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; contain:layout}
+@media(min-width:768px){.stat-grid{grid-template-columns:repeat(4,1fr); gap:14px}}
+.stat-card{
+  position:relative; overflow:hidden; padding:18px 16px;
+  border-radius:18px;
+}
+/* xp bar */
+.xp-bar-bg{height:6px; background:rgba(255,255,255,0.07); border-radius:99px; overflow:hidden}
+.xp-bar-fill{height:100%; border-radius:99px; transition:width .5s ease}
+/* segmented control — no blur */
+.seg-control{
+  display:inline-flex; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08);
+  border-radius:999px; padding:4px; gap:2px;
+}
+.seg-btn{
+  padding:7px 16px; border-radius:999px; font-size:.82rem; font-weight:700; cursor:pointer;
+  color:var(--muted); transition:background .14s ease, color .14s ease; border:none; background:transparent; font-family:inherit;
+}
+.seg-btn.active{background:var(--text); color:#000}
+.seg-btn:not(.active):hover{color:var(--text2)}
+/* weekly grid — contain + no blur */
+.week-grid{display:grid; grid-template-columns:1fr; gap:12px; contain:layout}
+@media(min-width:640px){.week-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:980px){.week-grid{grid-template-columns:repeat(7,1fr)}}
+.week-day-card{
+  background:#15151b; border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px; overflow:hidden; display:flex; flex-direction:column;
+  min-height:200px;
+  contain:layout paint;
+  transform:translateZ(0);
+}
+.week-day-head{
+  padding:10px 12px; display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+}
+.week-day-head.today{background:rgba(0,229,160,0.08); color:var(--accent); border-bottom-color:rgba(0,229,160,0.15)}
+.week-mini-slot{
+  padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.04);
+  display:flex; align-items:center; gap:8px; font-size:.78rem;
+}
+.week-mini-slot:last-child{border-bottom:none}
+.week-mini-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.week-mini-check{width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.18);display:grid;place-items:center;flex-shrink:0;font-size:.55rem}
+.week-mini-check.done{background:var(--accent);border-color:var(--accent);color:#000}
+/* animations — only compositor props */
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) translateZ(0) scale(1)}100%{opacity:0;transform:translateY(-80px) translateZ(0) scale(1.04)}}
+.xp-pop{position:fixed; pointer-events:none; font-weight:800; font-size:1.3rem; z-index:9999; animation:floatUp 1s ease-out forwards; font-family:'Fraunces',serif; will-change:transform, opacity}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.slide-up{animation:slideUp .22s ease-out}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.6);opacity:0}}
+.live-dot span:first-child{animation:pulse-ring 1.4s ease-out infinite}
+/* modal — lightweight blur only */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  z-index:100; display:flex; align-items:center; justify-content:center;
+  padding:16px; opacity:0; pointer-events:none; transition:opacity .18s ease;
+  will-change:opacity;
+}
+.modal-overlay.open{opacity:1; pointer-events:all}
+.modal-box{
+  background:#121216;
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:24px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto;
+  box-shadow:0 16px 48px rgba(0,0,0,0.5);
+  transform:translateY(8px) scale(0.98); transition:transform .20s ease;
+  will-change:transform;
+  -webkit-overflow-scrolling:touch;
+}
+.modal-overlay.open .modal-box{transform:translateY(0) scale(1) translateZ(0)}
+.modal-box::-webkit-scrollbar{width:6px}
+/* pomo */
+#pomo-timer-display{font-family:'Fraunces',serif; font-size:5rem; font-weight:900; letter-spacing:-.04em; line-height:1}
+/* heatmap */
+.heatmap-grid{display:flex; gap:3px; flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; -webkit-overflow-scrolling:touch}
+.heatmap-col{display:flex; flex-direction:column; gap:3px}
+.heatmap-cell{width:11px; height:11px; border-radius:3px; background:rgba(255,255,255,0.06); flex-shrink:0}
+.heatmap-cell[data-level="1"]{background:rgba(0,229,160,0.28)}
+.heatmap-cell[data-level="2"]{background:rgba(0,229,160,0.52)}
+.heatmap-cell[data-level="3"]{background:rgba(0,229,160,0.78)}
+.heatmap-cell[data-level="4"]{background:var(--accent)}
+/* leaderboard */
+.lb-row{
+  display:flex; align-items:center; gap:12px; padding:14px 16px;
+  border-radius:16px; border:1px solid rgba(255,255,255,0.06);
+  background:#1a1a20;
+  transition:transform .14s ease, border-color .14s ease, background .14s ease;
+  contain:layout paint;
+  will-change:transform;
+}
+.lb-row:hover{border-color:rgba(255,255,255,0.10); background:#21212a; transform:translateY(-1px) translateZ(0)}
+.lb-row.me{border-color:rgba(124,106,247,0.35); background:rgba(124,106,247,0.08)}
+.lb-rank{font-family:'Fraunces',serif; font-size:1.05rem; font-weight:900; width:28px; text-align:center; color:var(--muted)}
+.lb-rank.gold{color:#fbbf24}
+.lb-rank.silver{color:#cbd5e1}
+.lb-rank.bronze{color:#d97706}
+/* routine builder */
+.slot-builder-row{display:grid; grid-template-columns:1fr 120px 120px 36px 36px; gap:8px; align-items:end}
+@media(max-width:640px){.slot-builder-row{grid-template-columns:1fr 1fr;}.slot-builder-row .builder-actions{grid-column:1 / -1; display:flex; justify-content:flex-end; gap:8px}}
+/* onboarding */
+#onboarding{position:fixed; inset:0; z-index:150; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:1.5rem}
+#onboarding::before{
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(600px 400px at 30% 20%, rgba(124,106,247,0.12) 0%, transparent 70%),
+    radial-gradient(600px 400px at 80% 80%, rgba(0,229,160,0.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+/* sync */
+#sync-badge{position:fixed; top:14px; right:14px; z-index:99; font-size:.7rem; font-weight:700; padding:5px 12px; border-radius:999px; transition:opacity .2s ease, transform .2s ease; display:none; will-change:opacity}
+.sync-ok{background:rgba(0,229,160,0.14); color:var(--accent); border:1px solid rgba(0,229,160,0.22)}
+.sync-busy{background:rgba(251,191,36,0.12); color:var(--coin); border:1px solid rgba(251,191,36,0.22)}
+.sync-err{background:rgba(255,90,90,0.12); color:var(--danger); border:1px solid rgba(255,90,90,0.22)}
+/* clock */
+#clock-display{font-family:'Geist Mono',monospace; font-size:2.15rem; font-weight:700; letter-spacing:-.03em; line-height:1; display:inline}
+#date-display{display:inline; margin-left:10px; font-size:.82rem; font-weight:600; letter-spacing:.01em; color:var(--muted)}
+/* section headers */
+.section-title{font-family:'Fraunces',serif; font-size:1.45rem; font-weight:900; letter-spacing:-.03em}
+/* coin */
+.coin-display{display:inline-flex; align-items:center; gap:6px; background:rgba(251,191,36,0.10); border:1px solid rgba(251,191,36,0.18); border-radius:999px; padding:5px 12px; font-size:.82rem; font-weight:700; color:var(--coin)}
+/* toggle */
+.toggle{position:relative; width:42px; height:24px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute; inset:0; background:rgba(255,255,255,0.14); border-radius:999px; cursor:pointer; transition:background .14s ease}
+.toggle-slider::before{content:''; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:transform .18s ease; box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.toggle input:checked + .toggle-slider{background:var(--accent)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(18px) translateZ(0)}
+/* progress ring */
+.prog-ring{transform:rotate(-90deg)}
+.prog-ring-bg{fill:none; stroke:rgba(255,255,255,0.07)}
+.prog-ring-fill{fill:none; stroke:var(--accent); stroke-linecap:round; transition:stroke-dashoffset .5s ease}
+/* empty */
+.empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 24px; text-align:center; gap:12px; color:var(--muted)}
+.empty-state .empty-icon{font-size:2.8rem; opacity:.5}
+/* toast */
+#toast{
+  position:fixed; bottom:78px; left:50%; transform:translateX(-50%) translateZ(0); z-index:999;
+  background:#1e1e24;
+  border:1px solid rgba(255,255,255,0.10); border-radius:999px;
+  padding:10px 18px; font-size:.84rem; font-weight:600; display:none; white-space:nowrap;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  max-width:calc(100vw - 32px); overflow:hidden; text-overflow:ellipsis;
+  will-change:transform, opacity;
+}
+/* shop */
+.shop-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; contain:layout}
+@media(min-width:600px){.shop-grid{grid-template-columns:repeat(3,1fr)}}
+.shop-item{
+  background:#1a1a20; border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px;
+  transition:transform .14s ease, border-color .14s ease, background .14s ease;
+  contain:layout paint;
+  will-change:transform;
+}
+.shop-item:hover{border-color:rgba(255,255,255,0.12); transform:translateY(-2px) translateZ(0)}
+.shop-item.owned{border-color:rgba(0,229,160,0.35); background:rgba(0,229,160,0.06)}
+.shop-item.active-theme{border-color:rgba(124,106,247,0.45); background:rgba(124,106,247,0.08)}
+.shop-preview{height:44px; border-radius:10px; margin-bottom:2px; border:1px solid rgba(255,255,255,0.06)}
+/* compare */
+.compare-chip{display:inline-flex; align-items:center; gap:6px; padding:6px 12px 6px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.08); background:#1a1a20; font-size:.78rem; font-weight:700; cursor:pointer; transition:background .14s ease, border-color .14s ease; will-change:transform}
+.compare-chip:hover{border-color:rgba(255,255,255,0.14); background:#22222a}
+.compare-chip.selected{border-color:rgba(124,106,247,0.45); background:rgba(124,106,247,0.14); color:var(--accent2)}
+.compare-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* lb today bar */
+.lb-today-bar{height:4px; border-radius:99px; background:rgba(255,255,255,0.07); overflow:hidden; margin-top:4px}
+.lb-today-fill{height:100%; border-radius:99px; background:var(--accent); transition:width .4s ease}
+/* weekly day tab */
+.day-tab{
+  padding:7px 14px; border-radius:999px; font-size:.78rem; font-weight:700; cursor:pointer;
+  border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:var(--muted);
+  transition:background .14s ease, color .14s ease, border-color .14s ease; white-space:nowrap;
+}
+.day-tab.active{background:var(--text); color:#000; border-color:var(--text)}
+.day-tab.has-slots:not(.active){border-color:rgba(0,229,160,0.28); color:var(--accent)}
+/* routine type toggle */
+.rtype-toggle{
+  display:flex; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08);
+  border-radius:999px; padding:4px; gap:4px;
+}
+.rtype-btn{
+  flex:1; padding:8px 14px; border-radius:999px; font-weight:700; font-size:.84rem; cursor:pointer;
+  border:none; transition:background .14s ease, color .14s ease; display:flex; align-items:center; justify-content:center; gap:6px;
+  font-family:inherit;
+}
+.rtype-btn.active{background:var(--text); color:#000}
+.rtype-btn:not(.active){background:transparent; color:var(--muted)}
+.rtype-btn:not(.active):hover{color:var(--text2)}
+/* premium subtle divider */
+.premium-divider{height:1px; background:linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent); margin:18px 0}
+/* focus outline */
+*:focus-visible{outline:2px solid rgba(0,229,160,0.5); outline-offset:2px; border-radius:4px}
+/* perf: reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{animation:none !important; transition:none !important}
+}
+/* perf: smooth scrolling containers */
+#weekly-day-tabs, #weekly-slot-builder, #slot-builder, #heatmap-container{ -webkit-overflow-scrolling:touch; will-change:scroll-position}
 </style>
-
 </head>
-<body class="font-sans">
-  <header class="bg-black text-white p-4 flex items-center">
-    <img src="https://bondipathshala.com.bd/files/logo.png" alt="Bondi Pathshala Logo" class="h-10">
-    <h1 class="ml-4 text-xl font-bold">পড়ালেখা করা ভালো</h1>
-  </header>
+<body>
 
-  <div class="container mx-auto p-4 flex flex-col lg:flex-row gap-4">
-    <div class="lg:w-3/4 bg-white rounded-lg shadow-md p-4">
-      <h2 class="text-lg font-semibold mb-4 text-gray-100">Live Class</h2>
-      <div style="position: relative;"> <!-- Wrapper for player and custom share button -->
-        <div id="player" data-plyr-provider="youtube" data-plyr-embed-id="RUQcm3vIbWo"></div>
-        <button id="customShareBtn" title="Share" style="position: absolute; top: 15px; right: 15px; z-index: 20; background: none; border: none; cursor: pointer; padding: 0;">
-          <i class="fas fa-share-alt" style="color: white; font-size: 20px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5));"></i>
+<!-- SYNC BADGE -->
+<div id="sync-badge"></div>
+<div id="toast"></div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card slide-up">
+    <div style="text-align:center;margin-bottom:1.8rem">
+      <div style="width:56px;height:56px;border-radius:16px;background:var(--text);color:#000;display:grid;place-items:center;font-size:1.5rem;margin:0 auto 14px;box-shadow:0 8px 24px rgba(0,0,0,0.2)">◈</div>
+      <h1 class="font-display" style="font-size:1.85rem;font-weight:900;letter-spacing:-.04em;line-height:1">RoutineX</h1>
+      <p style="color:var(--muted);font-size:.85rem;margin-top:6px;letter-spacing:-.01em">Life OS — Premium. Build the day. Own the year.</p>
+      <div style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:4px 10px;border-radius:999px;background:rgba(0,229,160,0.10);border:1px solid rgba(0,229,160,0.18);font-size:.68rem;font-weight:700;color:var(--accent)"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 8px var(--accent)"></span> PREMIUM WEEKLY</div>
+    </div>
+    <div id="auth-login">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input id="li-user" class="inp" type="text" placeholder="ইউজারনেম" autocomplete="username">
+        <input id="li-pass" class="inp" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password">
+        <p id="li-err" style="color:var(--danger);font-size:.8rem;display:none;text-align:center"></p>
+        <button class="btn btn-accent btn-full" onclick="doLogin()" id="li-btn" style="margin-top:4px;padding:.78rem">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> লগইন করো
         </button>
-      </div>
-      <div class="flex space-x-4 mt-4">
-        <a id="downloadPdfBtn" href="https://www.bondipathshala.com.bd/pdf/20240527-1716748184-LRH05IsN.pdf" target="_blank" class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-          <i class="fas fa-file-pdf mr-2"></i>Download PDF
-        </a>
-        <button id="downloadEmojiBtn" class="download-emoji">
-          <i class="fas fa-smile mr-2"></i>Open on YouTube
-        </button>
+        <div class="auth-divider">অথবা</div>
+        <button class="btn btn-ghost btn-full" onclick="showAuthTab('register')">নতুন অ্যাকাউন্ট তৈরি করো →</button>
       </div>
     </div>
+    <div id="auth-register" style="display:none">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input id="rg-user" class="inp" type="text" placeholder="ইউজারনেম (৩+ অক্ষর)">
+        <input id="rg-pass" class="inp" type="password" placeholder="পাসওয়ার্ড (৪+ অক্ষর)">
+        <input id="rg-pass2" class="inp" type="password" placeholder="পাসওয়ার্ড নিশ্চিত করো">
+        <p id="rg-err" style="color:var(--danger);font-size:.8rem;display:none;text-align:center"></p>
+        <button class="btn btn-accent btn-full" onclick="doRegister()" id="rg-btn" style="margin-top:4px;padding:.78rem">
+          <i class="fa-solid fa-user-plus"></i> অ্যাকাউন্ট তৈরি করো
+        </button>
+        <div class="auth-divider">অথবা</div>
+        <button class="btn btn-ghost btn-full" onclick="showAuthTab('login')">← লগইনে ফিরে যাও</button>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:18px;font-size:.68rem;color:var(--muted2);letter-spacing:.02em">Premium • Weekly Routine • No clutter.</p>
+  </div>
+</div>
 
-    <div class="lg:w-1/4 bg-white rounded-lg shadow-md p-4">
-      <button id="openAddVideoBtn" class="w-full bg-black text-white p-2 rounded mb-4 fake-button">
-        <i class="fas fa-plus mr-2"></i>Add New Class
+<!-- ONBOARDING -->
+<div id="onboarding" style="display:none">
+  <div style="width:100%;max-width:520px;text-align:center;position:relative">
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.22);color:var(--accent2);font-size:.7rem;font-weight:800;letter-spacing:.06em;margin-bottom:16px">✦ WELCOME TO PREMIUM</div>
+    <h2 class="font-display" style="font-size:2.1rem;font-weight:900;letter-spacing:-.04em;line-height:1.1;margin-bottom:.6rem">তোমার দিন, <br><span style="background:linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent">তোমার নিয়মে</span></h2>
+    <p style="color:var(--muted);font-size:.92rem;margin-bottom:2rem;line-height:1.6;max-width:420px;margin-left:auto;margin-right:auto">দৈনিক একই রুটিন, নাকি সপ্তাহের প্রতিদিন আলাদা? <br>প্রিমিয়াম weekly planner দিয়ে পুরো সপ্তাহ ডিজাইন করো।</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-accent" style="padding:.8rem 1.6rem" onclick="closeOnboarding();openRoutineEditor(null);switchRoutineMode('manual')">
+        <i class="fa-solid fa-plus"></i> নতুন রুটিন
       </button>
-
-      <h2 class="text-lg font-semibold mb-4 text-gray-100">Class List</h2>
-      <ul id="classList" class="space-y-2 max-h-96 overflow-y-auto">
-       <li class="class-item p-2 rounded hover:bg-blue-100 cursor-pointer" data-vid="BzX25StCOyQ" data-nname="জৈব যৌগের ইতিহাস - পর্ব ০১" data-npdf="20250521-1747767276-zTUgBskf.pdf">
-  জৈব যৌগের ইতিহাস - পর্ব ০১ <i class="fas fa-file-pdf text-red-500 ml-2"></i>
-</li>
-<li class="class-item p-2 rounded hover:bg-blue-100 cursor-pointer" data-vid="a_tsletdZjs" data-nname="জৈব যৌগের ইতিহাস - পর্ব ০২" data-npdf="20250525-1748120787-RXz1vtTE.pdf">
-  জৈব যৌগের ইতিহাস - পর্ব ০২ <i class="fas fa-file-pdf text-red-500 ml-2"></i>
-</li>
-<li class="class-item p-2 rounded hover:bg-blue-100 cursor-pointer" data-vid="9055Ce-Ehd4" data-nname="জৈব যৌগের ইতিহাস  - পর্ব ০৩" data-npdf="20250526-1748209809-b0ltKw7V.pdf">
-  জৈব যৌগের ইতিহাস  - পর্ব ০৩ <i class="fas fa-file-pdf text-red-500 ml-2"></i>
-</li>
-<li class="class-item p-2 rounded hover:bg-blue-100 cursor-pointer" data-vid="CVCW92j2zSw" data-nname="জৈব যৌগ - পর্ব ০৪" data-npdf="20250529-1748503530-x3r34ooq.pdf">
-  জৈব যৌগের ইতিহাস - পর্ব ০৪ <i class="fas fa-file-pdf text-red-500 ml-2"></i>
-</li>
-<li class="class-item p-2 rounded hover:bg-blue-100 cursor-pointer" data-vid="XqMsgz9yTto" data-nname="জৈব যৌগ - পর্ব ০৫" data-npdf="20250530-1748546953-jhRBbO4q.pdf">
-  জৈব যৌগের ইতিহাস - পর্ব ০৫ <i class="fas fa-file-pdf text-red-500 ml-2"></i>
-</li>
-        <li class="class-item p-2 rounded hover:bg-blue-100 cursor-pointer" data-vid="vaF4aRwLdok">
-  জৈব রসায়ন - পর্ব ০৬
-</li>
-<li class="class-item p-2 rounded hover:bg-blue-100 cursor-pointer" data-vid="HqF4pBphbKM" data-nname="সমানুতা - পর্ব ০১" data-npdf="20250620-1750424001-AZt5hROq.pdf">
-  সমানুতা - পর্ব ০১ <i class="fas fa-file-pdf text-red-500 ml-2"></i>
-</li>
-      </ul>
+      <button class="btn btn-ghost" style="padding:.8rem 1.6rem" onclick="closeOnboarding();openRoutineEditor(null);switchRoutineMode('ai')">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> AI দিয়ে বানাই
+      </button>
+    </div>
+    <div style="margin-top:22px;display:flex;justify-content:center;gap:16px;font-size:.72rem;color:var(--muted2)">
+      <span><i class="fa-solid fa-check" style="color:var(--accent)"></i> Daily</span>
+      <span><i class="fa-solid fa-check" style="color:var(--accent)"></i> Weekly</span>
+      <span><i class="fa-solid fa-check" style="color:var(--accent)"></i> Premium</span>
     </div>
   </div>
+</div>
 
-<footer class="bg-gray-900 text-white py-8 px-4 md:px-8 relative overflow-hidden">
-  <!-- Neon Glow Background Effect -->
-  <div class="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-cyan-500/20 to-lime-500/20 animate-pulse"></div>
-  
-  <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left relative z-10">
-    <!-- Brand/Logo Section -->
-    <div>
-      <h2 class="text-3xl font-extrabold tracking-wider text-lime-400>Bondi Pathshala</h2>
-      <p class="mt-2 text-lime-300 t-medium">Bondi Pathshala</p>
+<!-- LOADING -->
+<div id="loading-screen" style="position:fixed;inset:0;z-index:199;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px">
+  <div style="width:32px;height:32px;border:2px solid rgba(255,255,255,0.08);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite"></div>
+  <div style="font-size:.85rem;color:var(--muted);font-weight:600;letter-spacing:.02em">লোড হচ্ছে…</div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- TOP HEADER -->
+<nav id="top-header">
+  <div class="brand"><span class="brand-dot">◈</span> RoutineX <span style="font-size:.62rem;font-weight:700;letter-spacing:.08em;color:var(--muted);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);padding:2px 7px;border-radius:999px;margin-left:2px">PREMIUM</span></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="text-align:right;display:none" id="hdr-xp-wrap">
+      <div style="font-size:.68rem;color:var(--muted);margin-bottom:3px;font-weight:600" id="hdr-level">Lv 1</div>
+      <div style="width:86px" class="xp-bar-bg"><div id="hdr-xp-bar" class="xp-bar-fill" style="background:linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);width:0%"></div></div>
     </div>
+    <div id="hdr-coins" class="coin-display" style="display:none">🟡 0</div>
+    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);display:grid;place-items:center;font-weight:800;font-size:.82rem;color:#000;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.2)" id="hdr-avatar" onclick="openProfileMenu()">A</div>
+    <button class="btn btn-ghost btn-icon" style="width:34px;height:34px;display:none" id="btn-logout" onclick="doLogout()" title="Logout"><i class="fa-solid fa-right-from-bracket" style="font-size:.85rem"></i></button>
+  </div>
+</nav>
 
-    <!-- Navigation Links -->
-    <div>
-      <h3 class="text-lg font-bold text-lime-400 mb-4 drop-shadow-[0_0_8px_rgba(132,204,22,0.6)]">মন ফ্রেশ থাকলে পড়া বেশি মনে থাকে!</h3>
-      <ul class="space-y-2 text-cyan-300 text-sm">
-  <li>পড়ায় ঝড় তুলো!</li>
-  <li>রঙিন নোট ফাটাও!</li>
-  <li> বই পড়ো!</li>
-      </ul>
-    </div>
+<!-- BOTTOM NAV DOCK -->
+<nav id="bottom-nav">
+  <div class="bnav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+    <i class="fa-solid fa-house"></i><span>হোম</span>
+  </div>
+  <div class="bnav-item" data-view="routines" onclick="switchView('routines')">
+    <i class="fa-solid fa-layer-group"></i><span>রুটিন</span>
+  </div>
+  <div class="bnav-item" data-view="tasks" onclick="switchView('tasks')">
+    <i class="fa-solid fa-list-check"></i><span>টাস্ক</span>
+  </div>
+  <div class="bnav-item" data-view="leaderboard" onclick="switchView('leaderboard')">
+    <i class="fa-solid fa-trophy"></i><span>লিডার</span>
+  </div>
+  <div class="bnav-item" data-view="history" onclick="switchView('history')">
+    <i class="fa-solid fa-chart-simple"></i><span>ইতিহাস</span>
+  </div>
+  <div class="bnav-item" data-view="shop" onclick="switchView('shop')">
+    <i class="fa-solid fa-bag-shopping"></i><span>শপ</span>
+  </div>
+</nav>
 
-    <!-- Social Media & Contact -->
-    <div>
-      <h3 class="text-lg font-bold text-lime-400 mb-4 drop-shadow-[0_0_8px_rgba(132,204,22,0.6)]">Connect With Us</h3>
-      <div class="flex justify-center md:justify-start space-x-4 mb-4">
-        <a href="#" class="hover:scale-110 transform transition-transform duration-300 drop-shadow-[0_0_6px_rgba(236,72,153,0.5)]">
-          <svg class="w-6 h-6 fill-current text-cyan-300 hover:text-pink-400" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-          </svg>
-        </a>
-        <a href="#" class="hover:scale-110 transform transition-transform duration-300 drop-shadow-[0_0_6px_rgba(236,72,153,0.5)]">
-          <svg class="w-6 h-6 fill-current text-cyan-300 hover:text-pink-400" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 14v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-          </svg>
-        </a>
+<!-- MAIN -->
+<div id="main-content">
+
+  <!-- DASHBOARD -->
+  <div id="view-dashboard" class="view active">
+    <!-- premium hero header -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span id="clock-display">00:00</span>
+          <span id="date-display">—</span>
+        </div>
+        <h1 class="font-display" style="font-size:1.9rem;font-weight:900;letter-spacing:-.04em;line-height:1" id="greeting">Good morning</h1>
+        <p style="color:var(--muted);font-size:.88rem;margin-top:6px;letter-spacing:-.01em" id="greeting-sub">আজকের ফোকাস সেট করো — পুরো সপ্তাহ তোমার হাতে</p>
       </div>
-      <p class="text-cyan-300 text-sm font-medium">Email: <a href="mailto:arnoy799@gmail.com" class="hover:text-pink-400 transition-colors duration-300 hover:drop-shadow-[0_0_6px_rgba(236,72,153,0.5)]">arnoy799@gmail.com</a></p>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="seg-control" id="dash-view-toggle">
+          <button class="seg-btn active" data-mode="today" onclick="switchDashView('today')">আজ</button>
+          <button class="seg-btn" data-mode="week" onclick="switchDashView('week')">সপ্তাহ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- stats premium -->
+    <div class="stat-grid" style="margin-bottom:18px">
+      <div class="card stat-card" style="--glow:var(--accent)">
+        <div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)"></span> আজকের XP</div>
+        <div id="stat-xp" style="font-family:'Fraunces',serif;font-size:1.85rem;font-weight:900;letter-spacing:-.03em;color:var(--accent);line-height:1">0</div>
+        <div id="stat-level-badge" class="badge badge-accent2" style="margin-top:8px">লেভেল ১</div>
+        <div style="margin-top:10px" class="xp-bar-bg"><div id="stat-prog-mini" class="xp-bar-fill" style="background:var(--accent);width:0%"></div></div>
+      </div>
+      <div class="card stat-card" style="--glow:var(--coin)">
+        <div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i class="fa-solid fa-coins" style="color:var(--coin);font-size:.7rem"></i> কয়েন</div>
+        <div id="stat-coins" style="font-family:'Fraunces',serif;font-size:1.85rem;font-weight:900;letter-spacing:-.03em;color:var(--coin);line-height:1">0</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:8px">study slots থেকে</div>
+        <div style="margin-top:10px" class="xp-bar-bg"><div id="stat-coins-bar" class="xp-bar-fill" style="background:var(--coin);width:40%"></div></div>
+      </div>
+      <div class="card stat-card" style="--glow:var(--accent2)">
+        <div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">সম্পন্ন</div>
+        <div id="stat-done" style="font-family:'Fraunces',serif;font-size:1.85rem;font-weight:900;letter-spacing:-.03em;color:var(--accent2);line-height:1">0/0</div>
+        <div style="margin-top:10px" class="xp-bar-bg"><div id="stat-prog-bar" class="xp-bar-fill" style="background:var(--accent2);width:0%"></div></div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:6px" id="stat-done-sub">0% শেষ</div>
+      </div>
+      <div class="card stat-card" style="--glow:var(--accent3)">
+        <div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">দিনের অগ্রগতি</div>
+        <div id="stat-day-pct" style="font-family:'Fraunces',serif;font-size:1.85rem;font-weight:900;letter-spacing:-.03em;color:var(--accent3);line-height:1">0%</div>
+        <div style="margin-top:10px" class="xp-bar-bg"><div id="stat-day-bar" class="xp-bar-fill" style="background:var(--accent3);width:0%"></div></div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:6px">সময় অতিবাহিত</div>
+      </div>
+    </div>
+
+    <!-- today's topic premium -->
+    <div class="card" style="padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="width:36px;height:36px;border-radius:10px;background:rgba(124,106,247,0.14);border:1px solid rgba(124,106,247,0.18);display:grid;place-items:center;color:var(--accent2);flex-shrink:0">
+        <i class="fa-solid fa-book-open" style="font-size:.9rem"></i>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--accent2);text-transform:uppercase;margin-bottom:2px">আজকের টপিক</div>
+        <div style="font-size:.78rem;color:var(--muted)">কী পড়ছো? মনে রাখতে লিখে রাখো</div>
+      </div>
+      <input id="today-topic-input" class="inp" style="flex:1.6;min-width:240px;background:rgba(255,255,255,0.05)" placeholder="যেমন: Organic Chemistry — Aldehyde..." oninput="saveTodayTopic('today-topic-input')">
+      <input id="today-topic-input-desktop" class="inp" style="display:none" placeholder="..." oninput="saveTodayTopic('today-topic-input-desktop')">
+    </div>
+
+    <!-- current slot premium -->
+    <div id="current-slot-card" class="card" style="padding:18px;margin-bottom:18px;border-color:rgba(0,229,160,0.18);background:linear-gradient(135deg, rgba(0,229,160,0.08) 0%, rgba(124,106,247,0.06) 100%)">
+      <div style="display:flex;align-items:center;gap:8px;font-size:.7rem;font-weight:800;letter-spacing:.08em;color:var(--accent);text-transform:uppercase;margin-bottom:10px">
+        <span class="live-dot" style="display:flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;position:relative;box-shadow:0 0 10px var(--accent)">
+            <span style="position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--accent);animation:pulse-ring 1.5s ease-out infinite"></span>
+          </span>
+          এখন চলছে
+        </span>
+        <span style="margin-left:auto;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0;font-size:.72rem" id="cur-slot-time">—</span>
+      </div>
+      <div id="cur-slot-title" class="font-display" style="font-size:1.35rem;font-weight:900;letter-spacing:-.03em;line-height:1.1">—</div>
+      <div id="cur-slot-desc" style="color:var(--muted);font-size:.88rem;margin-top:6px;line-height:1.5">—</div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-accent btn-sm" onclick="openPomodoro()"><i class="fa-solid fa-bolt"></i> ফোকাস ৫০ মি.</button>
+        <button class="btn btn-ghost btn-sm" onclick="speakCurrent()"><i class="fa-solid fa-volume-high"></i></button>
+        <span id="cur-slot-xp" class="badge badge-accent" style="margin-left:auto">0 XP</span>
+      </div>
+    </div>
+
+    <!-- TODAY VIEW -->
+    <div id="dash-today-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h2 class="section-title" style="margin:0;display:flex;align-items:center;gap:10px">আজকের রুটিন <span id="today-day-badge" class="badge badge-muted" style="font-weight:700">শনি</span></h2>
+        <div id="active-routine-name" class="badge badge-muted" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+      </div>
+      <div id="timeline" class="timeline-wrap"></div>
+      <div id="timeline-empty" style="display:none" class="empty-state card"><div class="empty-icon">🗓️</div><p>আজকের জন্য কোনো স্লট নেই — রুটিনে যোগ করো</p><button class="btn btn-accent btn-sm" onclick="switchView('routines')">রুটিন দেখো</button></div>
+    </div>
+
+    <!-- WEEK VIEW -->
+    <div id="dash-week-wrap" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+        <h2 class="section-title" style="margin:0">সাপ্তাহিক রুটিন <span style="font-size:.72rem;font-weight:700;color:var(--muted);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);padding:4px 10px;border-radius:999px;margin-left:8px;vertical-align:middle" id="week-range">—</span></h2>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:.72rem;color:var(--muted);font-weight:600">পুরো সপ্তাহের প্ল্যান এক নজরে</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)"></span>
+        </div>
+      </div>
+      <div id="week-grid" class="week-grid"></div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+        <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent)"></span> আজ</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent2)"></span> Study</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)"><span style="width:8px;height:8px;border-radius:50%;background:#f97316"></span> Meal / Break</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROUTINES -->
+  <div id="view-routines" class="view">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap">
+      <div>
+        <h2 class="section-title" style="margin:0 0 6px">আমার রুটিন</h2>
+        <p style="color:var(--muted);font-size:.85rem;max-width:520px">Daily — একই রুটিন প্রতিদিন। Weekly — সপ্তাহের প্রতিদিন আলাদা স্লট। Premium সাপোর্ট।</p>
+      </div>
+      <button class="btn btn-accent" onclick="openRoutineEditor(null)" style="padding:.75rem 1.25rem">
+        <i class="fa-solid fa-plus"></i> নতুন রুটিন
+      </button>
+    </div>
+
+    <!-- quick type explainer premium -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+      <div class="card" style="padding:14px 16px;display:flex;gap:12px;align-items:center;border-color:rgba(0,229,160,0.18)">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,229,160,0.12);display:grid;place-items:center;color:var(--accent)"><i class="fa-solid fa-repeat"></i></div>
+        <div><div style="font-weight:800;font-size:.9rem">Daily Routine</div><div style="font-size:.75rem;color:var(--muted)">প্রতিদিন একই স্লট — সহজ, ফোকাসড</div></div>
+      </div>
+      <div class="card" style="padding:14px 16px;display:flex;gap:12px;align-items:center;border-color:rgba(124,106,247,0.18);background:linear-gradient(135deg, rgba(124,106,247,0.08) 0%, transparent 100%)">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(124,106,247,0.14);display:grid;place-items:center;color:var(--accent2)"><i class="fa-solid fa-calendar-week"></i></div>
+        <div><div style="font-weight:800;font-size:.9rem">Weekly Routine <span class="badge badge-accent2" style="margin-left:6px;font-size:.6rem">PREMIUM</span></div><div style="font-size:.75rem;color:var(--muted)">৭ দিন, ৭ রকম — পুরো সপ্তাহ কন্ট্রোল</div></div>
+      </div>
+    </div>
+
+    <div id="routines-list" style="display:flex;flex-direction:column;gap:14px"></div>
+  </div>
+
+  <!-- TASKS -->
+  <div id="view-tasks" class="view">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <h2 class="section-title" style="margin:0">আমার টাস্ক ✅</h2>
+      <button class="btn btn-accent" onclick="openTaskEditor()"><i class="fa-solid fa-plus"></i> নতুন টাস্ক</button>
+    </div>
+    <div class="card" style="margin-bottom:16px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div><span style="font-size:.8rem;color:var(--muted)">আজকের টাস্ক:</span><span id="tasks-progress" style="font-weight:900;color:var(--accent);margin-left:8px;font-family:'Fraunces',serif">0/0</span></div>
+      <div style="flex:1;max-width:160px;height:8px;background:rgba(255,255,255,0.07);border-radius:999px;overflow:hidden"><div id="tasks-progress-bar" style="height:100%;background:linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);width:0%;transition:width .4s"></div></div>
+    </div>
+    <div id="tasks-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div id="view-leaderboard" class="view">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 class="section-title" style="margin:0">লিডারবোর্ড 🏆</h2>
+        <p style="color:var(--muted);font-size:.82rem;margin-top:4px">XP দিয়ে র‍্যাংক — পরিষ্কার, স্বচ্ছ, প্রিমিয়াম</p>
+      </div>
+      <div style="padding:6px 10px;border-radius:999px;background:rgba(0,229,160,0.10);border:1px solid rgba(0,229,160,0.18);font-size:.72rem;font-weight:700;color:var(--accent)">✦ LIVE • আজকের XP</div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:18px">
+      <button class="btn btn-accent btn-sm" id="lb-tab-today" onclick="switchLBTab('today')">আজ</button>
+      <button class="btn btn-ghost btn-sm" id="lb-tab-weekly" onclick="switchLBTab('weekly')">সাপ্তাহিক</button>
+      <button class="btn btn-ghost btn-sm" id="lb-tab-all" onclick="switchLBTab('all')">সর্বকালীন</button>
+    </div>
+    <div class="card" style="padding:16px;margin-bottom:18px">
+      <canvas id="lb-chart" height="180"></canvas>
+    </div>
+    <div id="lb-today-banner" style="display:block;margin-bottom:12px;padding:12px 14px;background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.14);border-radius:14px;font-size:.8rem;color:var(--accent);font-weight:600;display:flex;align-items:center;gap:8px">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse-ring 1.5s infinite"></span> আজকের লাইভ XP — রিয়েল টাইম আপডেট
+    </div>
+    <div id="lb-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="view-history" class="view">
+    <h2 class="section-title" style="margin-bottom:16px">XP ইতিহাস 📈</h2>
+    <div class="stat-grid" style="margin-bottom:18px">
+      <div class="card" style="padding:16px"><div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">🔥 স্ট্রিক</div><div id="hist-streak" style="font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--accent3);line-height:1">0</div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">দিন ধারাবাহিক</div></div>
+      <div class="card" style="padding:16px"><div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">🏆 সেরা দিন</div><div id="hist-best" style="font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--accent);line-height:1">0</div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">XP</div></div>
+      <div class="card" style="padding:16px"><div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📅 এই সপ্তাহ</div><div id="hist-week" style="font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--accent2);line-height:1">0</div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">XP</div></div>
+      <div class="card" style="padding:16px"><div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">∑ মোট XP</div><div id="hist-total" style="font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--coin);line-height:1">0</div><div style="font-size:.72rem;color:var(--muted);margin-top:4px">সব সময়</div></div>
+    </div>
+
+    <div class="card" style="padding:16px;margin-bottom:18px">
+      <div style="font-size:.76rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:12px">গত ৩ মাস — প্রতিদিনের XP</div>
+      <div id="heatmap-container" style="overflow-x:auto"></div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:.7rem;color:var(--muted)">কম <div class="heatmap-cell"></div><div class="heatmap-cell" data-level="1"></div><div class="heatmap-cell" data-level="2"></div><div class="heatmap-cell" data-level="3"></div><div class="heatmap-cell" data-level="4"></div> বেশি</div>
+    </div>
+
+    <div class="card" style="padding:16px;margin-bottom:18px">
+      <div style="font-size:.76rem;font-weight:800;letter-spacing:.06em;color:var(--accent2);text-transform:uppercase;margin-bottom:12px">📚 সাপ্তাহিক পড়ার সময়</div>
+      <canvas id="study-time-chart" height="140"></canvas>
+      <div style="display:flex;justify-content:center;gap:24px;margin-top:14px">
+        <div style="text-align:center"><div style="font-size:.68rem;color:var(--muted)">এই সপ্তাহ</div><div id="study-hours-week" style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:var(--accent2)">0h</div></div>
+        <div style="text-align:center"><div style="font-size:.68rem;color:var(--muted)">গড়/দিন</div><div id="study-hours-avg" style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:var(--accent)">0h</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:18px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:.78rem;font-weight:800;letter-spacing:.06em;color:var(--accent2);text-transform:uppercase">⚔️ তুলনা করো</div>
+        <div style="font-size:.72rem;color:var(--muted)">সর্বোচ্চ ২ জন</div>
+      </div>
+      <div id="compare-user-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px"><div style="color:var(--muted);font-size:.8rem">লোড হচ্ছে...</div></div>
+      <div id="compare-chart-wrap" style="display:none">
+        <canvas id="compare-chart" height="180"></canvas>
+        <div id="compare-table" style="margin-top:14px;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <div id="compare-empty" style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem">উপরের তালিকা থেকে ব্যবহারকারী বেছে নাও</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr;gap:14px">
+      <div class="card" style="padding:16px"><canvas id="hist-weekly-chart" height="160"></canvas></div>
+      <div class="card" style="padding:16px"><canvas id="hist-monthly-chart" height="160"></canvas></div>
     </div>
   </div>
 
-  <!-- Bottom Bar -->
-  <div class="border-t border-pink-500/50 mt-8 pt-4 text-center text-cyan-300 text-sm font-medium">
-    <p>© 2025 Bondi Pathshala. All rights reserved.</p>
+  <!-- SHOP -->
+  <div id="view-shop" class="view">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px">
+      <div>
+        <h2 class="section-title" style="margin:0">শপ 🛍️</h2>
+        <p style="color:var(--muted);font-size:.82rem;margin-top:4px">Study slots থেকে coins — প্রিমিয়াম থিম আনলক করো</p>
+      </div>
+      <div id="shop-balance" class="coin-display" style="font-size:.88rem">🟡 0</div>
+    </div>
+    <div style="height:1px;background:linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent);margin:16px 0"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;color:var(--muted);text-transform:uppercase">🎨 প্রিমিয়াম থিম</div>
+      <span class="badge badge-gold" style="font-size:.62rem">PREMIUM</span>
+    </div>
+    <div class="shop-grid" id="shop-themes" style="margin-bottom:10px"></div>
+    <p style="text-align:center;font-size:.7rem;color:var(--muted2);margin-top:8px">আরও থিম শীঘ্রই আসছে ✨ — শুধু প্রিমিয়াম ডিজাইন</p>
   </div>
-</footer>
 
-<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+</div><!-- /main -->
+
+<!-- MODALS -->
+
+<!-- ROUTINE EDITOR - premium with Daily/Weekly -->
+<div id="modal-routine" class="modal-overlay" onclick="if(event.target===this)closeRoutineEditor()">
+  <div class="modal-box" style="padding:22px;max-width:640px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h3 class="font-display" style="font-size:1.25rem;font-weight:900;letter-spacing:-.02em" id="routine-modal-title">নতুন রুটিন</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeRoutineEditor()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div id="routine-mode-toggle" style="display:flex;gap:6px;margin-bottom:14px">
+      <button class="btn btn-accent btn-sm btn-full" id="mode-manual-btn" onclick="switchRoutineMode('manual')"><i class="fa-solid fa-pencil"></i> নিজে বানাই</button>
+      <button class="btn btn-ghost btn-sm btn-full" id="mode-ai-btn" onclick="switchRoutineMode('ai')"><i class="fa-solid fa-wand-magic-sparkles"></i> AI দিয়ে বানাই</button>
+    </div>
+
+    <div id="manual-mode-content" style="display:flex;flex-direction:column;gap:14px">
+      <input id="routine-name-inp" class="inp" placeholder="রুটিনের নাম — যেমন: HSC Sprint, Weekly Master">
+      
+      <!-- Routine Type Premium Toggle -->
+      <div>
+        <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:8px">রুটিনের ধরন</div>
+        <div class="rtype-toggle">
+          <button class="rtype-btn active" id="rtype-daily" onclick="switchRoutineType('daily')"><i class="fa-solid fa-repeat"></i> Daily — প্রতিদিন একই</button>
+          <button class="rtype-btn" id="rtype-weekly" onclick="switchRoutineType('weekly')"><i class="fa-solid fa-calendar-week"></i> Weekly — ৭ দিন আলাদা</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:6px;line-height:1.4" id="rtype-hint">প্রতিদিন একই স্লট চলবে — সহজ ও ফোকাসড।</div>
+      </div>
+
+      <!-- Daily builder -->
+      <div id="daily-builder">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase">স্লট যোগ করো</div>
+          <button class="btn btn-ghost btn-xs" onclick="addSlotRow()"><i class="fa-solid fa-plus"></i> স্লট</button>
+        </div>
+        <div id="slot-builder" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;padding-right:4px"></div>
+      </div>
+
+      <!-- Weekly builder -->
+      <div id="weekly-builder" style="display:none">
+        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none" id="weekly-day-tabs"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 8px">
+          <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase" id="weekly-day-title">শনিবার — স্লট</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-xs" onclick="copyPrevDay()"><i class="fa-solid fa-copy"></i> আগের দিন কপি</button>
+            <button class="btn btn-ghost btn-xs" onclick="addWeeklySlot()"><i class="fa-solid fa-plus"></i> স্লট</button>
+          </div>
+        </div>
+        <div id="weekly-slot-builder" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;padding-right:4px"></div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;font-size:.7rem;color:var(--muted)">
+          <span><i class="fa-solid fa-circle" style="color:var(--accent);font-size:.5rem"></i> প্রতিদিন ৪-৬ টা স্লট রাখো</span>
+          <span>•</span><span>প্রয়োজনে কপি করে এডিট করো</span>
+        </div>
+      </div>
+
+      <div class="premium-divider"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-accent btn-full" onclick="saveRoutine()" style="padding:.78rem"><i class="fa-solid fa-check"></i> সেভ করো</button>
+        <button class="btn btn-ghost" onclick="closeRoutineEditor()">বাতিল</button>
+      </div>
+    </div>
+
+    <div id="ai-mode-content" style="display:none;flex-direction:column;gap:12px">
+      <!-- Step 1: Info -->
+      <div class="card" style="padding:14px;background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.06)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="width:22px;height:22px;border-radius:50%;background:var(--accent2);color:#fff;display:grid;place-items:center;font-size:.7rem;font-weight:800">1</span>
+          <span style="font-size:.76rem;font-weight:800;letter-spacing:.04em;color:var(--accent2);text-transform:uppercase">তোমার দিনের তথ্য দাও</span>
+          <span style="margin-left:auto" class="rtype-toggle" style="transform:scale(0.85);transform-origin:right">
+            <button class="rtype-btn active" id="ai-rtype-daily" onclick="switchAiRtype('daily')" style="padding:5px 10px;font-size:.72rem">Daily</button>
+            <button class="rtype-btn" id="ai-rtype-weekly" onclick="switchAiRtype('weekly')" style="padding:5px 10px;font-size:.72rem">Weekly</button>
+          </span>
+        </div>
+        <div id="ai-rtype-hint" style="font-size:.68rem;color:var(--muted);margin-bottom:10px;line-height:1.4">Daily — একই রুটিন প্রতিদিন চলবে। Weekly — ৭ দিন আলাদা স্লট।</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <input id="ai-wake" class="inp" style="font-size:.82rem;padding:.55rem .7rem" placeholder="ওঠার সময় — 5:30 AM">
+            <input id="ai-sleep" class="inp" style="font-size:.82rem;padding:.55rem .7rem" placeholder="ঘুম — 11:00 PM">
+          </div>
+          <textarea id="ai-subjects" class="inp" rows="2" style="font-size:.82rem;resize:none;min-height:56px" placeholder="পড়াশোনা — যেমন: Physics 2h, Math 2h, Chemistry 1.5h..."></textarea>
+          <textarea id="ai-extra" class="inp" rows="1" style="font-size:.82rem;resize:none" placeholder="অন্যান্য — নামাজ, খাবার, কোচিং (ঐচ্ছিক)"></textarea>
+        </div>
+        <button class="btn btn-accent2 btn-full" onclick="generateAIPrompt()" style="margin-top:10px;padding:.72rem"><i class="fa-solid fa-wand-magic-sparkles"></i> প্রম্পট তৈরি করো</button>
+      </div>
+      <!-- Step 2 & 3: Copy + Paste (efficient, lightweight) -->
+      <div id="ai-prompt-section" style="display:none;flex-direction:column;gap:10px">
+        <div class="card" style="padding:12px;background:rgba(124,106,247,0.06);border-color:rgba(124,106,247,0.14)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:.7rem;font-weight:800;letter-spacing:.04em;color:var(--accent2);text-transform:uppercase">ধাপ ২ — প্রম্পট কপি করো</span>
+            <button class="btn btn-ghost btn-xs" onclick="copyPrompt()" id="copy-prompt-btn" style="padding:4px 10px"><i class="fa-solid fa-copy"></i> কপি</button>
+          </div>
+          <div id="ai-generated-prompt" style="font-size:.7rem;color:var(--muted);background:rgba(0,0,0,0.2);padding:10px;border-radius:10px;max-height:110px;overflow-y:auto;white-space:pre-wrap;line-height:1.5;border:1px solid rgba(255,255,255,0.06)"></div>
+          <div style="font-size:.62rem;color:var(--muted2);margin-top:6px">ChatGPT / Gemini / Claude এ পেস্ট করো → কনফার্ম করো → JSON কপি করো</div>
+        </div>
+        <div class="card" style="padding:12px;background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.06)">
+          <div style="font-size:.7rem;font-weight:800;letter-spacing:.04em;color:var(--accent);text-transform:uppercase;margin-bottom:8px">ধাপ ৩ — JSON পেস্ট করো</div>
+          <textarea id="ai-json-input" class="inp" rows="4" style="font-size:.72rem;font-family:'Geist Mono',monospace;resize:vertical;min-height:84px" placeholder='{"routine_name":"...","slots":[...]}' oninput="debouncedPreview()"></textarea>
+          <div id="ai-json-error" style="display:none;color:var(--danger);font-size:.7rem;margin-top:6px;font-weight:600"></div>
+          <div id="ai-json-preview" style="display:none;margin-top:10px"></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-ghost btn-xs" onclick="parseJSONPreview()" style="flex:0 0 auto"><i class="fa-solid fa-eye"></i> প্রিভিউ</button>
+            <button class="btn btn-accent btn-full btn-sm" onclick="importJSONRoutine()" style="flex:1"><i class="fa-solid fa-file-import"></i> ইম্পোর্ট করো</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POMO -->
+<div id="modal-pomo" class="modal-overlay" onclick="if(event.target===this)closePomo()">
+  <div class="modal-box" style="padding:28px;text-align:center;max-width:420px">
+    <div id="pomo-slot-name" style="color:var(--muted);font-size:.85rem;margin-bottom:6px;font-weight:600">—</div>
+    <div id="pomo-timer-display">50:00</div>
+    <div id="pomo-xp-hint" style="color:var(--accent2);font-size:.82rem;font-weight:700;margin-bottom:20px;letter-spacing:.02em">—</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button id="pomo-btn" class="btn btn-accent" style="padding:.75rem 1.8rem;font-size:1rem;min-width:120px" onclick="togglePomo()">শুরু</button>
+      <button class="btn btn-ghost" style="padding:.75rem 1.4rem" onclick="closePomo()">বন্ধ</button>
+    </div>
+    <p style="font-size:.7rem;color:var(--muted2);margin-top:14px">Premium focus — ৫০ মিনিট deep work</p>
+  </div>
+</div>
+
+<!-- CUSTOM TIME -->
+<div id="modal-custom-time" class="modal-overlay" onclick="if(event.target===this)closeCustomTime()">
+  <div class="modal-box" style="padding:24px;max-width:400px">
+    <h3 class="font-display" style="font-size:1.15rem;font-weight:900;margin-bottom:4px" id="custom-slot-name">—</h3>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px">কতক্ষণ পড়েছো? সময় দাও — XP সাথে সাথে যোগ হবে</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div><label style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">ঘণ্টা</label><input id="custom-hours" type="number" min="0" max="12" class="inp" style="text-align:center;font-size:1.1rem;font-weight:800;margin-top:6px" oninput="updateCustomXP()"></div>
+      <div><label style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">মিনিট</label><input id="custom-minutes" type="number" min="0" max="59" class="inp" style="text-align:center;font-size:1.1rem;font-weight:800;margin-top:6px" oninput="updateCustomXP()"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <div class="card" style="flex:1;padding:12px;text-align:center"><div style="font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase">XP</div><div id="custom-xp-preview" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:900;color:var(--accent)">+0</div></div>
+      <div class="card" style="flex:1;padding:12px;text-align:center"><div style="font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase">COINS</div><div id="custom-coin-preview" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:900;color:var(--coin)">+0</div></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-accent btn-full" onclick="confirmCustomTime()"><i class="fa-solid fa-check"></i> সম্পন্ন</button>
+      <button class="btn btn-ghost" onclick="closeCustomTime()">বাতিল</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK EDITOR -->
+<div id="modal-task" class="modal-overlay" onclick="if(event.target===this)closeTaskEditor()">
+  <div class="modal-box" style="padding:22px;max-width:480px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 class="font-display" style="font-size:1.2rem;font-weight:900" id="task-modal-title">নতুন টাস্ক</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeTaskEditor()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <input id="task-title-inp" class="inp" placeholder="টাস্কের নাম *">
+      <textarea id="task-desc-inp" class="inp" style="min-height:70px;resize:vertical" placeholder="বিবরণ (ঐচ্ছিক)"></textarea>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <select id="task-prio-inp" class="inp"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>
+        <input id="task-due-inp" type="date" class="inp">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="btn btn-accent btn-full" onclick="saveTask()"><i class="fa-solid fa-check"></i> সেভ</button>
+      <button class="btn btn-ghost" onclick="closeTaskEditor()">বাতিল</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER PROFILE -->
+<div id="modal-user-profile" class="modal-overlay" onclick="if(event.target===this)closeUserProfile()">
+  <div class="modal-box" style="padding:22px;max-width:460px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h3 class="font-display" style="font-size:1.15rem;font-weight:900">প্রোফাইল</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeUserProfile()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div id="up-avatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);display:grid;place-items:center;font-weight:900;font-size:1.3rem;color:#000">A</div>
+      <div>
+        <div id="up-username" style="font-weight:800;font-size:1.05rem">—</div>
+        <div id="up-xp" style="font-size:.85rem;color:var(--accent);font-weight:700">—</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px"><span id="up-period-label">—</span> • XP</div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:6px">আজকের টপিক</div>
+      <div id="up-topic" style="padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:12px;font-size:.85rem;min-height:40px">—</div>
+    </div>
+    <div>
+      <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:8px">আজকের রুটিন • <span id="up-period-label-2">—</span></div>
+      <div id="up-slots" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+</div>
+
 <script>
-  const player = new Plyr('#player', {
-    controls: ['play-large', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'settings', 'pip', 'fullscreen'],
-    youtube: { noCookie: true, rel: 0, showinfo: 0, modestbranding: 1 },
-    settings: ['quality', 'speed'],
-    speed: { selected: 1, options: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] }
-  });
-
-const container = player.elements.container;
-
-// Create skip buttons
-const skipLeft = document.createElement('button');
-const skipRight = document.createElement('button');
-
-// Set icons (replace with your image URLs)
-skipLeft.innerHTML = `<img src="https://cdn-icons-png.freepik.com/512/4553/4553697.png" alt="Back" style="width:28px;height:28px;">`;
-skipRight.innerHTML = `<img src="https://cdn-icons-png.freepik.com/512/4553/4553697.png" alt="Forward" style="width:28px;height:28px;">`;
-
-// Common style
-const styleSkipButton = (btn, position) => {
-  Object.assign(btn.style, {
-    position: 'absolute',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: '#3a3a3a',
-    border: 'none',
-    borderRadius: '50%',
-    padding: '16px',
-    zIndex: 12,
-    opacity: 0,
-    transition: 'opacity 0.3s',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  });
-  btn.style.left = position;
-};
-
-// Position buttons near center
-styleSkipButton(skipLeft, 'calc(50% - 120px)');
-styleSkipButton(skipRight, 'calc(50% + 60px)');
-
-// Append to player
-container.style.position = 'relative';
-container.appendChild(skipLeft);
-container.appendChild(skipRight);
-
-// Click actions
-skipLeft.addEventListener('click', () => {
-  player.currentTime = Math.max(0, player.currentTime - 10);
-  showToast('⏪ 10s');
-});
-skipRight.addEventListener('click', () => {
-  player.currentTime = Math.min(player.duration, player.currentTime + 10);
-  showToast('⏩ 10s');
-});
-
-// Show/hide on interaction or pause
-function showSkipButtons() {
-  skipLeft.style.opacity = '1';
-  skipRight.style.opacity = '1';
-  skipLeft.style.pointerEvents = 'auto';
-  skipRight.style.pointerEvents = 'auto';
-  clearTimeout(skipLeft._timeout);
-  skipLeft._timeout = setTimeout(hideSkipButtons, 700);
-}
-function hideSkipButtons() {
-  skipLeft.style.opacity = '0';
-  skipRight.style.opacity = '0';
-  skipLeft.style.pointerEvents = 'none';
-  skipRight.style.pointerEvents = 'none';
-}
-
-['mousemove', 'touchstart'].forEach(evt =>
-  container.addEventListener(evt, showSkipButtons)
+/* ================= SUPABASE ================= */
+const { createClient } = supabase;
+const sb = createClient(
+  'https://olfvcgjabgciufqoufeq.supabase.co',
+  'sb_publishable_34y4AnLFW3bHCMoj6-tyrw_yb2CaGfq'
 );
-player.on('pause', showSkipButtons);
-player.on('play', hideSkipButtons);
 
-  function setHighestQuality() {
-    const availableQualities = player.quality?.options;
-    if (availableQualities && availableQualities.length > 0) {
-      const sorted = availableQualities.filter(q => q !== 'auto').sort((a, b) => parseInt(b) - parseInt(a));
-      if (sorted.length > 0) {
-        player.quality = sorted[0];
-        console.log(`Set highest quality: ${sorted[0]}`);
-      }
-    }
-  }
+/* ================= CONSTANTS ================= */
+const LEVELS = [0,500,1500,3000,5000,8000,12000,17000,23000,30000,40000];
+const LEVEL_NAMES = ['','নতুন','শিক্ষার্থী','অনুসন্ধানকারী','চ্যালেঞ্জার','প্রো','এলিট','মাস্টার','গ্র্যান্ড','লেজেন্ড','মিথ','দেবতা'];
+const CAT_COLORS = {
+  study:'#7c6af7', break:'#3b82f6', rest:'#60a5fa',
+  nap:'#818cf8', wake:'#00e5a0', sleep:'#4b5563',
+  meal:'#f97316', prep:'#eab308', winddown:'#ec4899', other:'#6b6b7e'
+};
+const CAT_LABELS = {
+  study:'Study', break:'Break', meal:'Meal', wake:'Wake', sleep:'Sleep', prep:'Prep', winddown:'Winddown', nap:'Nap', rest:'Rest', other:'Other'
+};
+const WEEK_DAYS = ['sat','sun','mon','tue','wed','thu','fri'];
+const WEEK_LABELS_BN = { sat:'শনি', sun:'রবি', mon:'সোম', tue:'মঙ্গল', wed:'বুধ', thu:'বৃহস্পতি', fri:'শুক্র' };
+const WEEK_LABELS_EN = { sat:'SAT', sun:'SUN', mon:'MON', tue:'TUE', wed:'WED', thu:'THU', fri:'FRI' };
 
-  function attachClassItemListeners() {
-    const classItems = document.querySelectorAll('.class-item');
-    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+/* ================= STATE ================= */
+let currentUser   = null;
+let routines      = [];
+let activeRoutine = null;
+let completedSlots= {};
+let xpHistory     = {};
+let coinsHistory  = {};
+let spentCoins    = {};
+let todayLogId    = null;
+let allLogs       = [];
+let tasks         = [];
+let editingTaskId = null;
+let currentSlotIdx= 0;
+let clockInterval = null;
+let syncTimer     = null;
+let pomSlotIdx    = 0;
+let pomInterval   = null;
+let pomSeconds    = 3000;
+let pomRunning    = false;
+let editingRoutineId = null;
+let lbChart = null, histWeeklyChart=null, histMonthlyChart=null, studyTimeChart=null;
+let currentLBTab = 'today';
+let customTimeSlotId=null, customTimeSlotIdx=null;
+let todayTopic = '';
+let dashView = 'today'; // today | week
+let routineType = 'daily'; // daily | weekly
+let weeklySlotsDraft = { sat:[], sun:[], mon:[], tue:[], wed:[], thu:[], fri:[] };
+let weeklyActiveDay = 'sat';
+// legacy aiGeneratedRoutine removed (now copy-paste engine)
+let compareSelected = [];
+let compareChart = null, compareAllLogs=null;
 
-    classItems.forEach(item => {
-      if (item._eventListener) item.removeEventListener('click', item._eventListener);
-    });
-
-    classItems.forEach(item => {
-      const listener = () => {
-        const videoId = item.dataset.vid;
-        currentVideoId = videoId;
-        localStorage.setItem('lastSelectedVideo', videoId);
-
-        player.source = {
-          type: 'video',
-          sources: [{ src: videoId, provider: 'youtube' }]
-        };
-
-        const customShareBtn = document.getElementById('customShareBtn');
-        if (customShareBtn) {
-          customShareBtn.addEventListener('click', () => {
-            if (currentVideoId) {
-              const url = `https://www.youtube.com/watch?v=${currentVideoId}`;
-              navigator.clipboard.writeText(url).then(() => alert('Video link copied!'))
-                .catch(() => alert('Copy failed.'));
-            } else alert("No video selected.");
-          });
-        }
-
-        classItems.forEach(i => i.classList.remove('bg-blue-200'));
-        item.classList.add('bg-blue-200');
-
-        const pdfLink = item.dataset.npdf;
-        if (pdfLink) {
-          downloadPdfBtn.href = `https://www.bondipathshala.com.bd/pdf/${pdfLink}`;
-          downloadPdfBtn.classList.remove('hidden');
-        } else {
-          downloadPdfBtn.classList.add('hidden');
-        }
-      };
-      item.addEventListener('click', listener);
-      item._eventListener = listener;
-    });
-  }
-
-  attachClassItemListeners();
-
-  // Load stored videos
-  const storedVideos = JSON.parse(localStorage.getItem('customVideos')) || [];
-  const classListUl = document.getElementById('classList');
-  storedVideos.forEach(video => {
-    const li = document.createElement('li');
-    li.className = 'class-item p-2 rounded hover:bg-blue-100 cursor-pointer';
-    li.dataset.vid = video.id;
-    li.dataset.nname = video.title;
-    li.dataset.npdf = video.pdfLink || '';
-    li.innerHTML = `${video.title}${video.pdfLink ? ` <i class="fas fa-file-pdf text-red-500 ml-2"></i>` : ''}`;
-    classListUl.appendChild(li);
+/* ================= DATE HELPERS ================= */
+function todayKey(){
+  const d=new Date();
+  if(d.getHours()<5) d.setDate(d.getDate()-1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function localDateKey(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function lastNDays(n){
+  const today=todayKey(); const [y,m,d]=today.split('-').map(Number);
+  return Array.from({length:n},(_,i)=>{
+    const date=new Date(y,m-1,d-(n-1-i));
+    return localDateKey(date);
   });
-  attachClassItemListeners();
-
-  // Resume last watched
-  window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      const lastVideoId = localStorage.getItem('lastSelectedVideo');
-      if (lastVideoId) {
-        const lastItem = [...document.querySelectorAll('.class-item')].find(i => i.dataset.vid === lastVideoId);
-        if (lastItem) {
-          lastItem.click();
-          lastItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-    }, 3500);
-  });
-
-function showToast(message) {
-  const toast = document.getElementById('playerToast');
-  toast.textContent = message;
-  toast.style.opacity = '1';
-  clearTimeout(toast._hideTimeout);
-  toast._hideTimeout = setTimeout(() => {
-    toast.style.opacity = '0';
-  }, 1500);
+}
+function getWeekRangeLabel(){
+  const days=lastNDays(7);
+  const fmt=d=>{
+    const dt=new Date(d+'T00:00:00');
+    return dt.toLocaleDateString('bn-BD',{day:'numeric',month:'short'});
+  };
+  return `${fmt(days[0])} — ${fmt(days[6])}`;
+}
+function getTodayWeekdayKey(){
+  const d=new Date();
+  if(d.getHours()<5) d.setDate(d.getDate()-1);
+  const jsDay=d.getDay(); // 0 Sun ...6 Sat
+  const map=['sun','mon','tue','wed','thu','fri','sat'];
+  return map[jsDay];
+}
+function getWeekdayKeyForDate(dateStr){
+  const dt=new Date(dateStr+'T00:00:00');
+  const map=['sun','mon','tue','wed','thu','fri','sat'];
+  return map[dt.getDay()];
 }
 
-  // Download button
-  const downloadEmojiBtn = document.getElementById('downloadEmojiBtn');
-  if (downloadEmojiBtn) {
-    downloadEmojiBtn.addEventListener('click', () => {
-      if (currentVideoId) {
-        window.open(`https://www.youtube.com/watch?v=${currentVideoId}`, '_blank');
-      } else {
-        alert("No video selected");
-      }
-    });
+/* ================= XP / LEVEL / COINS ================= */
+function getLevelInfo(totalXP){
+  for(let i=LEVELS.length-1;i>=0;i--) if(totalXP>=LEVELS[i]) return {level:i+1,next:LEVELS[i+1]??null,prev:LEVELS[i]};
+  return {level:1,next:LEVELS[1],prev:0};
+}
+function getTotalXP(){ return Object.values(xpHistory).reduce((s,v)=>s+v,0); }
+function getTotalCoins(){
+  const earned=Object.values(coinsHistory).reduce((s,v)=>s+v,0);
+  const spent=(typeof myPurchases!=='undefined'?myPurchases:[]).reduce((sum,p)=>{
+    const t=typeof SHOP_THEMES!=='undefined'?SHOP_THEMES.find(x=>x.id===p.item_id):null;
+    return sum+(t?t.price:0);
+  },0);
+  return Math.max(0, earned - spent);
+}
+function getTodaySlots(){
+  if(!activeRoutine) return [];
+  if(activeRoutine.type==='weekly'){
+    const key=getTodayWeekdayKey();
+    return activeRoutine.weeklySlots?.[key] || [];
   }
-
-  // Global keyboard shortcuts like YouTube
-  window.addEventListener('keydown', event => {
-    const tag = event.target.tagName.toLowerCase();
-    if (tag === 'input' || tag === 'textarea' || event.target.isContentEditable) return;
-
-    const key = event.key.toLowerCase();
-switch (key) {
-case 'k':
-case ' ':
-  event.preventDefault();
-  player.togglePlay();
-  showToast(player.playing ? 'Playing' : 'Paused');
-  break;
-
-case 'arrowup':
-  event.preventDefault();
-  player.volume = Math.min(1, player.volume + 0.1);
-  showToast(`Volume: ${(player.volume * 100).toFixed(0)}%`);
-  break;
-
-case 'arrowdown':
-  event.preventDefault();
-  player.volume = Math.max(0, player.volume - 0.1);
-  showToast(`Volume: ${(player.volume * 100).toFixed(0)}%`);
-  break;
-
-case ',':
-  {
-    const current = player.speed;
-    const options = player.config.speed.options;
-    const index = options.indexOf(current);
-    if (index > 0) {
-      player.speed = options[index - 1];
-      showToast(`Speed: ${player.speed.toFixed(2)}x`);
-    }
-  }
-  break;
-
-case '.':
-  {
-    const current = player.speed;
-    const options = player.config.speed.options;
-    const index = options.indexOf(current);
-    if (index < options.length - 1) {
-      player.speed = options[index + 1];
-      showToast(`Speed: ${player.speed.toFixed(2)}x`);
-    }
-  }
-  break;
-
-case 'arrowleft':
-  player.currentTime = Math.max(0, player.currentTime - 5);
-  showToast(`⏪ -5s`);
-  break;
-
-case 'arrowright':
-  player.currentTime = Math.min(player.duration, player.currentTime + 5);
-  showToast(`⏩ +5s`);
-  break;
-
-case 'j':
-  player.currentTime = Math.max(0, player.currentTime - 10);
-  showToast(`⏪ -10s`);
-  break;
-
-case 'l':
-  player.currentTime = Math.min(player.duration, player.currentTime + 10);
-  showToast(`⏩ +10s`);
-  break;
-
-    }
-  });
-
-  // Save time every 10s
-  setInterval(() => {
-    if (player && currentVideoId && !player.paused) {
-      const progressKey = `videoProgress_${currentVideoId}`;
-      localStorage.setItem(progressKey, player.currentTime);
-    }
-  }, 10000);
-
-  // Resume time when ready
-  player.on('ready', () => {
-    setHighestQuality();
-    if (currentVideoId) {
-      const progressKey = `videoProgress_${currentVideoId}`;
-      const savedTime = parseFloat(localStorage.getItem(progressKey));
-      if (!isNaN(savedTime)) {
-        player.currentTime = savedTime;
+  return activeRoutine.slots || [];
+}
+function getSlotsForDay(dayKey){
+  if(!activeRoutine) return [];
+  if(activeRoutine.type==='weekly') return activeRoutine.weeklySlots?.[dayKey] || [];
+  // daily routine shows same for all days
+  return activeRoutine.slots || [];
+}
+function recalcToday(){
+  if(!activeRoutine) return {xp:0,coins:0};
+  const slots=getTodaySlots();
+  let xp=0, coins=0;
+  slots.forEach(sl=>{
+    const comp=completedSlots[sl.id];
+    if(comp){
+      if(typeof comp==='object' && comp.custom){ xp+=comp.xp||0; coins+=comp.coins||0; }
+      else {
+        const rawXP=sl.xp||0;
+        const isStudy=sl.category==='study';
+        const slotXP=isStudy?rawXP:Math.min(rawXP,10);
+        xp+=slotXP;
+        if(isStudy){ const hrs=slotDurationHours(sl); coins+=Math.round(hrs*10); }
       }
     }
   });
-
-  player.on('sourcechange', () => {
-    setTimeout(() => {
-      setHighestQuality();
-      if (currentVideoId) {
-        const progressKey = `videoProgress_${currentVideoId}`;
-        const savedTime = parseFloat(localStorage.getItem(progressKey));
-        if (!isNaN(savedTime)) {
-          player.currentTime = savedTime;
-        }
-      }
-    }, 500);
-  });
-  
-  // Create help button
-const helpBtn = document.createElement('button');
-helpBtn.id = 'helpBtn';
-helpBtn.textContent = '?';
-Object.assign(helpBtn.style, {
-  position: 'fixed',
-  bottom: '20px',
-  right: '20px',
-  width: '40px',
-  height: '40px',
-  borderRadius: '50%',
-  backgroundColor: '#1e40af', // blue-800 dark
-  color: 'white',
-  border: 'none',
-  fontSize: '24px',
-  cursor: 'pointer',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.7)',
-  zIndex: '99999',
-});
-document.body.appendChild(helpBtn);
-
-// Create help popup
-const helpPopup = document.createElement('div');
-helpPopup.id = 'helpPopup';
-Object.assign(helpPopup.style, {
-  display: 'none',
-  position: 'fixed',
-  bottom: '75px',
-  right: '20px',
-  width: '300px',
-  backgroundColor: '#111827', // gray-900 dark
-  color: 'white',
-  borderRadius: '12px',
-  boxShadow: '0 4px 12px rgba(0,0,0,0.8)',
-  padding: '16px 20px',
-  fontSize: '14px',
-  lineHeight: '1.5',
-  zIndex: '99999',
-  userSelect: 'none',
-  fontFamily: 'Arial, sans-serif',
-});
-helpPopup.innerHTML = `
-  <strong style="font-size:16px;display:block;margin-bottom:10px;">Keyboard Shortcuts</strong>
-  <ul style="padding-left: 18px; margin: 0;">
-    <li><b>K / Space</b>: Play / Pause</li>
-    <li><b>J / ←</b>: Rewind 10s / 5s</li>
-    <li><b>L / →</b>: Forward 10s / 5s</li>
-    <li><b>↑ / ↓</b>: Volume up / down</li>
-    <li><b>M</b>: Mute / Unmute</li>
-    <li><b>F</b>: Fullscreen toggle</li>
-    <li><b>, / .</b>: Speed down / up</li>
-    <li><b>?</b>: Toggle this help</li>
-  </ul>
-`;
-document.body.appendChild(helpPopup);
-
-// Toggle function
-function toggleHelp() {
-  helpPopup.style.display = helpPopup.style.display === 'block' ? 'none' : 'block';
+  xpHistory[todayKey()]=xp;
+  coinsHistory[todayKey()]=coins;
+  return {xp,coins};
+}
+function slotDurationHours(sl){
+  const [sh,sm,sp]=parseT(sl.start), [eh,em,ep]=parseT(sl.end);
+  let s=toMins(sh,sm,sp), e=toMins(eh,em,ep);
+  if(e<=s) e+=1440;
+  return (e-s)/60;
 }
 
-// Button click toggles popup
-helpBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  toggleHelp();
-});
+/* ================= TIME HELPERS ================= */
+function parseT(str){ const m=str.match(/(\d+):(\d+) ?([APap][Mm])/); if(!m) return [0,0,'AM']; return [+m[1],+m[2],m[3].toUpperCase()]; }
+function toMins(h,m,p){ let v=h*60+m; if(p==='PM'&&h!==12) v+=720; if(p==='AM'&&h===12) v=m; return v; }
+function minsToTime(v){ const h=Math.floor(v/60)%24,m=v%60,p=h>=12?'PM':'AM',h12=h%12||12; return `${h12}:${String(m).padStart(2,'0')} ${p}`; }
 
-// Click outside closes popup
-document.addEventListener('click', (e) => {
-  if (!helpBtn.contains(e.target) && !helpPopup.contains(e.target)) {
-    helpPopup.style.display = 'none';
-  }
-});
-
-// Press ? key toggles popup
-document.addEventListener('keydown', (e) => {
-  if (e.key === '?') {
-    toggleHelp();
-  }
-});
-
-const playerElement = document.getElementById('player'); // your Plyr container
-
-let lastTapTime = 0;
-let lastTapX = 0;
-
-playerElement.addEventListener('touchend', (e) => {
-  const currentTime = Date.now();
-  const tapX = e.changedTouches[0].clientX;
-
-  // Check for double tap within 300ms and close horizontal position (100px)
-  if (currentTime - lastTapTime < 300 && Math.abs(tapX - lastTapX) < 100) {
-    const width = playerElement.clientWidth;
-    const tapSide = tapX < width / 2 ? 'left' : 'right';
-
-    if (tapSide === 'left') {
-      player.currentTime = Math.max(0, player.currentTime - 10);
-      showToast('⏪ 10s');
+/* ================= SUPABASE QUERIES ================= */
+async function dbGetUser(username){
+  const {data}=await sb.from('users').select('*').eq('username', username.toLowerCase()).single();
+  return data;
+}
+async function dbCreateUser(username,password){
+  const {data,error}=await sb.from('users').insert({username:username.toLowerCase(),password,coins:0}).select().single();
+  if(error) throw error; return data;
+}
+async function dbUpdateCoins(userId,coins){
+  await sb.from('users').update({coins}).eq('id',userId);
+}
+async function dbGetRoutines(username){
+  const {data}=await sb.from('routines').select('*').eq('username',username.toLowerCase()).order('created_at',{ascending:false});
+  return data||[];
+}
+function normalizeRoutine(r){
+  // handle new weekly format
+  let type='daily';
+  let slots=[];
+  let weeklySlots={sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]};
+  // if routine has routine_type column
+  if(r.routine_type) type=r.routine_type;
+  else if(r.type) type=r.type;
+  else if(r.weekly_slots) type='weekly';
+  else if(r.weeklySlots) type='weekly';
+  // slots
+  if(type==='weekly'){
+    if(r.weekly_slots && typeof r.weekly_slots==='object' && !Array.isArray(r.weekly_slots)){
+      weeklySlots={...weeklySlots, ...r.weekly_slots};
+    } else if(r.weeklySlots && typeof r.weeklySlots==='object'){
+      weeklySlots={...weeklySlots, ...r.weeklySlots};
+    } else if(Array.isArray(r.slots) && r.slots.length && typeof r.slots[0]==='object' && r.slots[0].day){
+      // legacy? skip
+    } else if(r.slots && typeof r.slots==='object' && !Array.isArray(r.slots) && r.slots.sat){
+      weeklySlots={...weeklySlots, ...r.slots};
+      slots=[];
+    } else if(r.slots && r.slots.weeklySlots){
+      weeklySlots={...weeklySlots, ...r.slots.weeklySlots};
     } else {
-      player.currentTime = Math.min(player.duration, player.currentTime + 10);
-      showToast('⏩ 10s');
+      // fallback: if slots is object with day keys
+      if(r.slots && typeof r.slots==='object' && !Array.isArray(r.slots)){
+        const keys=Object.keys(r.slots);
+        if(keys.some(k=>WEEK_DAYS.includes(k))){
+          weeklySlots={...weeklySlots, ...r.slots};
+        }
+      }
     }
-    lastTapTime = 0; // reset to avoid triple tap
+    // ensure each day is array
+    WEEK_DAYS.forEach(d=>{ if(!Array.isArray(weeklySlots[d])) weeklySlots[d]=[]; });
   } else {
-    lastTapTime = currentTime;
-    lastTapX = tapX;
+    if(Array.isArray(r.slots)) slots=r.slots;
+    else if(Array.isArray(r.weekly_slots)) slots=r.weekly_slots;
+    else slots=[];
   }
-});
-
-// Optional: desktop double click support
-playerElement.addEventListener('dblclick', (e) => {
-  const rect = playerElement.getBoundingClientRect();
-  const clickX = e.clientX - rect.left;
-  const width = playerElement.clientWidth;
-
-  if (clickX < width / 2) {
-    player.currentTime = Math.max(0, player.currentTime - 10);
-    showToast('⏪ 10s');
+  return {
+    id:r.id,
+    name:r.name,
+    type,
+    slots,
+    weeklySlots,
+    is_active: !!r.is_active,
+    created_at:r.created_at
+  };
+}
+async function dbSaveRoutine(r){
+  // r: {id, name, type, slots, weeklySlots, is_active}
+  const payload={
+    username: currentUser.username.toLowerCase(),
+    name: r.name,
+    is_active: r.is_active,
+  };
+  // try to store weekly friendly
+  if(r.type==='weekly'){
+    payload.slots = []; // keep empty for backwards compat
+    payload.weekly_slots = r.weeklySlots;
+    payload.routine_type = 'weekly';
+    // also store slots as weeklySlots for local fallback if columns missing
+    // we will try, if fails fallback to JSON in slots
   } else {
-    player.currentTime = Math.min(player.duration, player.currentTime + 10);
-    showToast('⏩ 10s');
+    payload.slots = r.slots;
+    payload.weekly_slots = null;
+    payload.routine_type = 'daily';
   }
-});
+  try{
+    if(r.id){
+      const {data,error}=await sb.from('routines').update(payload).eq('id',r.id).select().single();
+      if(error) throw error;
+      return normalizeRoutine(data);
+    } else {
+      const {data,error}=await sb.from('routines').insert(payload).select().single();
+      if(error) throw error;
+      return normalizeRoutine(data);
+    }
+  }catch(e){
+    // fallback: store everything in slots as JSON string/object
+    console.warn('dbSaveRoutine fallback',e.message);
+    const fallbackPayload={
+      username: currentUser.username.toLowerCase(),
+      name: r.name,
+      is_active: r.is_active,
+      slots: r.type==='weekly' ? r.weeklySlots : r.slots,
+    };
+    // add type hint in name if needed? No.
+    // Try again without extra columns
+    try{
+      if(r.id){
+        const {data}=await sb.from('routines').update(fallbackPayload).eq('id',r.id).select().single();
+        const norm=normalizeRoutine(data);
+        // patch type manually because DB didn't store it
+        norm.type=r.type; norm.weeklySlots=r.weeklySlots; norm.slots=r.slots;
+        // also store in local LS for persistence
+        localStorage.setItem('rx_routine_type_'+r.id, r.type);
+        if(r.type==='weekly') localStorage.setItem('rx_weekly_'+r.id, JSON.stringify(r.weeklySlots));
+        return norm;
+      }else{
+        const {data}=await sb.from('routines').insert(fallbackPayload).select().single();
+        const norm=normalizeRoutine(data);
+        norm.type=r.type; norm.weeklySlots=r.weeklySlots; norm.slots=r.slots;
+        localStorage.setItem('rx_routine_type_'+data.id, r.type);
+        if(r.type==='weekly') localStorage.setItem('rx_weekly_'+data.id, JSON.stringify(r.weeklySlots));
+        return norm;
+      }
+    }catch(e2){
+      // ultimate fallback: localStorage only
+      const localId=r.id || 'local_'+Date.now();
+      const localRoutines=JSON.parse(localStorage.getItem('rx_local_routines')||'[]');
+      const idx=localRoutines.findIndex(x=>x.id===localId);
+      const newR={id:localId, name:r.name, type:r.type, slots:r.slots, weeklySlots:r.weeklySlots, is_active:r.is_active};
+      if(idx>=0) localRoutines[idx]=newR; else localRoutines.push(newR);
+      localStorage.setItem('rx_local_routines', JSON.stringify(localRoutines));
+      return newR;
+    }
+  }
+}
+async function dbDeleteRoutine(id){
+  try{ await sb.from('routines').delete().eq('id',id); }catch(e){}
+  try{ localStorage.removeItem('rx_routine_type_'+id); localStorage.removeItem('rx_weekly_'+id);}catch(e){}
+  // also remove from local fallback
+  try{
+    const local=JSON.parse(localStorage.getItem('rx_local_routines')||'[]');
+    const filtered=local.filter(x=>x.id!==id);
+    localStorage.setItem('rx_local_routines', JSON.stringify(filtered));
+  }catch(e){}
+}
+async function dbSetActiveRoutine(username, activeId){
+  try{
+    await sb.from('routines').update({is_active:false}).eq('username',username.toLowerCase());
+    if(activeId) await sb.from('routines').update({is_active:true}).eq('id',activeId);
+  }catch(e){}
+  // also handle local
+  try{
+    const local=JSON.parse(localStorage.getItem('rx_local_routines')||'[]');
+    local.forEach(x=> x.is_active = x.id===activeId);
+    localStorage.setItem('rx_local_routines', JSON.stringify(local));
+  }catch(e){}
+}
+async function dbGetLogs(username){
+  const {data}=await sb.from('daily_logs').select('*').eq('username',username.toLowerCase());
+  return data||[];
+}
+async function dbGetAllLogs(){
+  const {data}=await sb.from('daily_logs').select('username,date,xp,coins,completed_slots');
+  return data||[];
+}
+async function dbUpsertLog(username,date,completedSlots,xp,coins){
+  if(todayLogId){
+    await sb.from('daily_logs').update({completed_slots:completedSlots,xp,coins}).eq('id',todayLogId);
+  }else{
+    const {data}=await sb.from('daily_logs').insert({username:username.toLowerCase(),date,completed_slots:completedSlots,xp,coins}).select().single();
+    if(data) todayLogId=data.id;
+  }
+}
+
+/* ================= SYNC ================= */
+function scheduleSave(){
+  clearTimeout(syncTimer);
+  showSync('busy','⏳ সেভ হচ্ছে…');
+  syncTimer=setTimeout(async()=>{
+    try{
+      const {xp,coins}=recalcToday();
+      await dbUpsertLog(currentUser.username, todayKey(), completedSlots, xp, coins);
+      showSync('ok','✓ সেভ হয়েছে');
+      updateStats();
+    }catch(e){ showSync('err','✗ সেভ হয়নি'); }
+  },900);
+}
+
+/* ================= AUTH ================= */
+function showAuthTab(tab){
+  document.getElementById('auth-login').style.display=tab==='login'?'block':'none';
+  document.getElementById('auth-register').style.display=tab==='register'?'block':'none';
+}
+async function doLogin(){
+  const u=document.getElementById('li-user').value.trim();
+  const p=document.getElementById('li-pass').value;
+  const err=document.getElementById('li-err');
+  err.style.display='none';
+  if(!u||!p){ err.textContent='সব ঘর পূরণ করো'; err.style.display='block'; return; }
+  document.getElementById('li-btn').disabled=true;
+  try{
+    const user=await dbGetUser(u);
+    if(!user || user.password!==p) throw new Error('ইউজারনেম বা পাসওয়ার্ড ভুল');
+    await bootApp(user);
+  }catch(e){ err.textContent=e.message; err.style.display='block'; }
+  document.getElementById('li-btn').disabled=false;
+}
+async function doRegister(){
+  const u=document.getElementById('rg-user').value.trim();
+  const p=document.getElementById('rg-pass').value;
+  const p2=document.getElementById('rg-pass2').value;
+  const err=document.getElementById('rg-err');
+  err.style.display='none';
+  if(u.length<3){ err.textContent='ইউজারনেম ৩+ অক্ষর'; err.style.display='block'; return; }
+  if(p.length<4){ err.textContent='পাসওয়ার্ড ৪+ অক্ষর'; err.style.display='block'; return; }
+  if(p!==p2){ err.textContent='পাসওয়ার্ড মেলেনি'; err.style.display='block'; return; }
+  document.getElementById('rg-btn').disabled=true;
+  try{
+    const exists=await dbGetUser(u).catch(()=>null);
+    if(exists) throw new Error('ইউজারনেম আগেই আছে');
+    const user=await dbCreateUser(u,p);
+    await bootApp(user);
+  }catch(e){ err.textContent=e.message; err.style.display='block'; }
+  document.getElementById('rg-btn').disabled=false;
+}
+async function bootApp(user){
+  currentUser=user;
+  localStorage.setItem('rx_sess', JSON.stringify({username:user.username}));
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('loading-screen').style.display='flex';
+  try{
+    // load routines
+    let dbRoutines=await dbGetRoutines(user.username);
+    // merge with local fallback
+    try{
+      const local=JSON.parse(localStorage.getItem('rx_local_routines')||'[]');
+      // add local not in db
+      local.forEach(lr=>{
+        if(!dbRoutines.some(dr=>dr.id===lr.id)) dbRoutines.push(lr);
+      });
+    }catch(e){}
+    routines=dbRoutines.map(normalizeRoutine);
+    // patch from localStorage type cache
+    routines.forEach(r=>{
+      const cachedType=localStorage.getItem('rx_routine_type_'+r.id);
+      if(cachedType && !r.type) r.type=cachedType;
+      if(cachedType==='weekly'){
+        try{
+          const ws=JSON.parse(localStorage.getItem('rx_weekly_'+r.id)||'null');
+          if(ws) r.weeklySlots=ws;
+          r.type='weekly';
+        }catch(e){}
+      }
+      // if still type missing but slots looks like weekly object
+      if(!r.type && r.slots && typeof r.slots==='object' && !Array.isArray(r.slots) && WEEK_DAYS.some(k=>k in r.slots)){
+        r.weeklySlots=r.slots; r.slots=[]; r.type='weekly';
+      }
+      if(!r.type) r.type='daily';
+      if(!r.weeklySlots) r.weeklySlots={sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]};
+      WEEK_DAYS.forEach(d=>{ if(!Array.isArray(r.weeklySlots[d])) r.weeklySlots[d]=[]; });
+      if(!Array.isArray(r.slots)) r.slots=[];
+    });
+
+    // load logs
+    const logs=await dbGetLogs(user.username);
+    xpHistory={}; coinsHistory={}; completedSlots={}; todayLogId=null;
+    logs.forEach(l=>{
+      xpHistory[l.date]=l.xp||0;
+      coinsHistory[l.date]=l.coins||0;
+      if(l.date===todayKey()){
+        completedSlots=l.completed_slots||{};
+        todayLogId=l.id;
+        // cleanup legacy keys if any
+        ['_legacy1','_legacy2','_legacy3','_legacy4'].forEach(k=>{ if(completedSlots[k]!==undefined) delete completedSlots[k]; });
+      }
+    });
+
+    // load purchases (themes)
+    try{ myPurchases=await dbGetPurchases(user.username); }catch(e){ myPurchases=[]; }
+    const activeThemePurchase=myPurchases.find(p=>p.item_id==='active_theme');
+    if(activeThemePurchase?.expires_at) applyTheme(activeThemePurchase.expires_at);
+
+    // load tasks
+    try{
+      const {data:taskData}=await sb.from('tasks').select('*').eq('username',user.username.toLowerCase());
+      tasks=taskData||[];
+    }catch(e){ tasks=JSON.parse(localStorage.getItem('rx_tasks_'+user.username)||'[]'); }
+
+    // active routine
+    activeRoutine = routines.find(r=>r.is_active) || routines[0] || null;
+    // if no routine, show onboarding
+    if(!activeRoutine){
+      document.getElementById('onboarding').style.display='flex';
+    } else {
+      // ensure completedSlots keys match today's slots
+      // no need
+    }
+
+    // load topic
+    await loadTodayTopic();
+
+    // init UI
+    updateSidebar();
+    updateStats();
+    renderTimeline();
+    renderWeeklyGrid();
+    renderRoutinesList();
+    renderTasks();
+    startClock();
+    switchView('dashboard');
+    switchDashView('today');
+    // defer heavy charts to idle for buttery boot (no scroll lag on first paint)
+    setTimeout(()=> { try{loadLeaderboard();}catch(e){} }, 600);
+    // render history only when user opens history, but pre-warm on idle
+    if('requestIdleCallback' in window){
+      requestIdleCallback(()=> { try{ /* renderHistory(); */ }catch(e){} }, {timeout:3000});
+    }
+
+    document.getElementById('loading-screen').style.display='none';
+  }catch(e){
+    console.error(e);
+    document.getElementById('loading-screen').style.display='none';
+    showToast('লোড করতে সমস্যা: '+e.message);
+  }
+}
+function doLogout(){
+  localStorage.removeItem('rx_sess');
+  currentUser=null;
+  routines=[]; activeRoutine=null; completedSlots={};
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('onboarding').style.display='none';
+  stopClock();
+}
+function openProfileMenu(){
+  // simple: toggle logout button visibility or show profile
+  const btn=document.getElementById('btn-logout');
+  btn.style.display=btn.style.display==='none'?'inline-flex':'none';
+  // also show user profile? we keep it simple
+}
+
+/* ================= SIDEBAR / STATS ================= */
+function updateSidebar(){
+  if(!currentUser) return;
+  const total=getTotalXP();
+  const info=getLevelInfo(total);
+  document.getElementById('hdr-avatar').textContent=currentUser.username.charAt(0).toUpperCase();
+  document.getElementById('hdr-level').textContent=`Lv ${info.level} • ${LEVEL_NAMES[info.level]||''}`;
+  const pct=info.next? Math.round(((total-info.prev)/(info.next-info.prev))*100):100;
+  document.getElementById('hdr-xp-bar').style.width=pct+'%';
+  document.getElementById('hdr-xp-wrap').style.display='block';
+  document.getElementById('hdr-coins').style.display='inline-flex';
+  document.getElementById('hdr-coins').textContent=`🟡 ${getTotalCoins().toLocaleString()}`;
+  document.getElementById('btn-logout').style.display='none';
+}
+function updateStats(){
+  const todayXP=xpHistory[todayKey()]||0;
+  const total=getTotalXP();
+  const info=getLevelInfo(total);
+  document.getElementById('stat-xp').textContent=todayXP.toLocaleString();
+  document.getElementById('stat-level-badge').textContent=`লেভেল ${info.level} • ${LEVEL_NAMES[info.level]||''}`;
+  const prev=info.prev, next=info.next|| (prev+1000);
+  const pctNext= next? Math.round(((total-prev)/(next-prev))*100):100;
+  document.getElementById('stat-prog-mini').style.width=Math.min(100,pctNext)+'%';
+
+  document.getElementById('stat-coins').textContent=getTotalCoins().toLocaleString();
+  // coins bar: relative to 500 ?
+  const coinPct=Math.min(100, Math.round((getTotalCoins()/500)*100));
+  document.getElementById('stat-coins-bar').style.width=coinPct+'%';
+
+  const slots=getTodaySlots();
+  const totalSlots=slots.length;
+  const done=slots.filter(s=>completedSlots[s.id]).length;
+  document.getElementById('stat-done').textContent=`${done}/${totalSlots}`;
+  const prog=totalSlots? Math.round(done/totalSlots*100):0;
+  document.getElementById('stat-prog-bar').style.width=prog+'%';
+  document.getElementById('stat-done-sub').textContent= prog+'% শেষ';
+
+  const now=new Date();
+  const dayMins=now.getHours()*60+now.getMinutes();
+  const dayPct=Math.round(dayMins/1440*100);
+  document.getElementById('stat-day-pct').textContent=dayPct+'%';
+  document.getElementById('stat-day-bar').style.width=dayPct+'%';
+
+  // header coins
+  if(currentUser){
+    document.getElementById('hdr-coins').textContent=`🟡 ${getTotalCoins().toLocaleString()}`;
+  }
+}
+
+/* ================= CLOCK ================= */
+function startClock(){
+  stopClock();
+  function tick(){
+    const now=new Date();
+    try{
+      // ORIGINAL working logic — restored (butter version broke locale), with manual fallback
+      const cd=document.getElementById('clock-display');
+      if(cd){
+        let t="";
+        try{ t=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false}); }catch(e){ t=""; }
+        // fallback if locale gives bad result (e.g. "00:00" at 6am or empty)
+        if(!t || !t.includes(':') || t==="00:00" && now.getHours()!==0){
+          t=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+        }
+        cd.textContent=t;
+      }
+      const dd=document.getElementById('date-display');
+      if(dd){
+        try{ dd.textContent=now.toLocaleDateString('bn-BD',{weekday:'long', day:'numeric', month:'long'}); }
+        catch(e){ try{ dd.textContent=now.toLocaleDateString(undefined,{weekday:'long', day:'numeric', month:'long'}); }catch(e2){} }
+      }
+    }catch(e){ console.warn('clock tick',e); }
+    // greeting
+    const h=now.getHours();
+    let greet='Good morning';
+    if(h>=12 && h<17) greet='Good afternoon';
+    else if(h>=17 && h<22) greet='Good evening';
+    else if(h>=22 || h<5) greet='Good night';
+    document.getElementById('greeting').textContent=greet;
+    // update current slot highlight every minute
+    updateCurrentSlot();
+    // update day badge
+    const wd=WEEK_LABELS_BN[getTodayWeekdayKey()] || '';
+    const el=document.getElementById('today-day-badge');
+    if(el) el.textContent=wd;
+    const wr=document.getElementById('week-range');
+    if(wr) wr.textContent=getWeekRangeLabel();
+  }
+  tick();
+  clockInterval=setInterval(tick, 1000);
+}
+function stopClock(){ if(clockInterval) clearInterval(clockInterval); }
+
+/* ================= CURRENT SLOT ================= */
+function updateCurrentSlot(){
+  const slots=getTodaySlots();
+  if(!slots.length){
+    document.getElementById('cur-slot-title').textContent='কোনো রুটিন নেই';
+    document.getElementById('cur-slot-desc').textContent='রুটিন তৈরি করো — Daily বা Weekly';
+    document.getElementById('cur-slot-time').textContent='—';
+    document.getElementById('cur-slot-xp').textContent='0 XP';
+    return;
+  }
+  const now=new Date();
+  const curMins=now.getHours()*60+now.getMinutes();
+  let idx=0;
+  let found=-1;
+  for(let i=0;i<slots.length;i++){
+    const [sh,sm,sp]=parseT(slots[i].start);
+    const [eh,em,ep]=parseT(slots[i].end);
+    let s=toMins(sh,sm,sp), e=toMins(eh,em,ep);
+    if(e<=s) e+=1440;
+    if(curMins>=s && curMins<e){ found=i; break; }
+    if(curMins>=e) idx=i+1;
+  }
+  currentSlotIdx= found>=0?found: Math.min(idx, slots.length-1);
+  const sl=slots[currentSlotIdx];
+  if(!sl) return;
+  document.getElementById('cur-slot-title').textContent=sl.title;
+  document.getElementById('cur-slot-desc').textContent= (sl.desc|| CAT_LABELS[sl.category]||'') + ` • ${sl.start} — ${sl.end}`;
+  document.getElementById('cur-slot-time').textContent=`${sl.start} — ${sl.end}`;
+  document.getElementById('cur-slot-xp').textContent=`${sl.xp||0} XP`;
+  const col=CAT_COLORS[sl.category]||'#6b6b7e';
+  document.getElementById('current-slot-card').style.setProperty('--slot-color', col);
+  // highlight timeline — cheap, no forced reflow
+  const rows=document.getElementById('timeline')?.children;
+  if(rows){
+    for(let i=0;i<rows.length;i++){
+      const c=rows[i].querySelector('.slot-card');
+      if(c) c.classList.toggle('active', i===currentSlotIdx);
+    }
+  }
+}
+
+/* ================= TIMELINE ================= */
+function switchDashView(mode){
+  dashView=mode;
+  document.querySelectorAll('#dash-view-toggle .seg-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.mode===mode);
+  });
+  // instant toggle, no thrash
+  const todayWrap=document.getElementById('dash-today-wrap');
+  const weekWrap=document.getElementById('dash-week-wrap');
+  todayWrap.style.display= mode==='today'?'block':'none';
+  weekWrap.style.display= mode==='week'?'block':'none';
+  // defer heavy render to next frame for buttery switch
+  requestAnimationFrame(()=>{
+    if(mode==='week') renderWeeklyGrid();
+    else renderTimeline();
+  });
+}
+function renderTimeline(){
+  const cont=document.getElementById('timeline');
+  if(!cont) return;
+  const empty=document.getElementById('timeline-empty');
+  const slots=getTodaySlots();
+  if(!slots.length){
+    cont.innerHTML='';
+    if(empty) empty.style.display='flex';
+    const nameEl=document.getElementById('active-routine-name');
+    if(nameEl) nameEl.textContent= activeRoutine? activeRoutine.name : '—';
+    updateCurrentSlot();
+    return;
+  }
+  if(empty) empty.style.display='none';
+  const nameEl=document.getElementById('active-routine-name');
+  if(nameEl) nameEl.textContent= activeRoutine.name + (activeRoutine.type==='weekly'? ' • Weekly' : ' • Daily');
+  cont.innerHTML=slots.map((sl,i)=>{
+    const done=!!completedSlots[sl.id];
+    const col=CAT_COLORS[sl.category]||CAT_COLORS.other;
+    const isStudy=sl.category==='study';
+    const xpLabel= `${sl.xp||0} XP`;
+    return `
+    <div class="slot-row">
+      <div class="slot-check ${done?'done':''}" onclick="toggleSlot('${sl.id}')" title="${done?'আনডু':'সম্পন্ন'}">
+        ${done?'<i class="fa-solid fa-check" style="font-size:.85rem"></i>':'<span style="width:8px;height:8px;border-radius:50%;background:'+col+';display:inline-block"></span>'}
+      </div>
+      <div class="slot-card ${done?'done':''}" style="--slot-color:${col}" onclick="toggleSlot('${sl.id}')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+              <span style="font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${col};background:${col}14;border:1px solid ${col}22;padding:2px 8px;border-radius:999px">${CAT_LABELS[sl.category]||sl.category}</span>
+              <span style="font-size:.72rem;color:var(--muted);font-weight:600"><i class="fa-regular fa-clock" style="font-size:.7rem"></i> ${sl.start} — ${sl.end}</span>
+              ${isStudy?`<span style="font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(251,191,36,0.12);color:var(--coin);border:1px solid rgba(251,191,36,0.18)"><i class="fa-solid fa-coins" style="font-size:.6rem"></i> ${Math.round(slotDurationHours(sl)*10)} </span>`:''}
+            </div>
+            <div style="font-weight:800;font-size:.98rem;letter-spacing:-.01em;line-height:1.2">${sl.title}</div>
+            ${sl.desc?`<div style="font-size:.78rem;color:var(--muted);margin-top:3px;line-height:1.4">${sl.desc}</div>`:''}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+            <span style="font-size:.72rem;font-weight:800;padding:4px 10px;border-radius:999px;background:${done?'var(--accent)':'rgba(255,255,255,0.06)'};color:${done?'#000':'var(--muted)'};border:1px solid ${done?'var(--accent)':'rgba(255,255,255,0.08)'}">${done?'✓ সম্পন্ন': xpLabel}</span>
+            ${isStudy && !done?`<button class="btn btn-ghost btn-xs" style="font-size:.68rem;padding:4px 10px" onclick="event.stopPropagation();openCustomTime('${sl.id}',${i})"><i class="fa-solid fa-stopwatch"></i> কাস্টম</button>`:''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  updateCurrentSlot();
+}
+function renderWeeklyGrid(){
+  const grid=document.getElementById('week-grid');
+  if(!grid) return;
+  if(!activeRoutine){
+    grid.innerHTML='<div class="empty-state card" style="grid-column:1/-1"><div class="empty-icon">🗓️</div><p>কোনো রুটিন নেই</p></div>';
+    return;
+  }
+  const todayKeyDay=getTodayWeekdayKey();
+  const todayStr=todayKey();
+  // build fast lookup for logs by date (avoid O(n*m) find)
+  const logByDate = {};
+  if(allLogs && allLogs.length){
+    for(let i=0;i<allLogs.length;i++){
+      const l=allLogs[i];
+      if(l.username===currentUser?.username?.toLowerCase()){
+        logByDate[l.date]=l;
+      }
+    }
+  }
+  grid.innerHTML=WEEK_DAYS.map(day=>{
+    const slots=getSlotsForDay(day);
+    const isToday=day===todayKeyDay;
+    const labelBn=WEEK_LABELS_BN[day];
+    const labelEn=WEEK_LABELS_EN[day];
+    // compute progress for that weekday's date in current week
+    // find date for this weekday in current week (last 7 days)
+    const days=lastNDays(7);
+    // find the date that matches this weekday (closest)
+    let dateForDay=null;
+    for(let i=days.length-1;i>=0;i--){
+      if(getWeekdayKeyForDate(days[i])===day){ dateForDay=days[i]; break; }
+    }
+    if(!dateForDay){
+      // fallback: use today if not found (should not happen)
+      dateForDay=todayStr;
+    }
+    const xpForDay= xpHistory[dateForDay]||0;
+    const isPast= dateForDay < todayStr;
+    const isFuture= dateForDay > todayStr;
+    // for today, use completedSlots; for other days, check if logs has completed? we don't have per-slot for past days easily, but we can approximate via XP>0
+    let doneCount=0;
+    if(isToday){
+      doneCount= slots.filter(s=>completedSlots[s.id]).length;
+    } else {
+      // try to estimate from logs if available
+      // look up daily_logs for that date (we have allLogs maybe)
+      // for simplicity, if xpForDay>0, assume some progress
+      doneCount= xpForDay>0 ? Math.ceil(slots.length*0.6) : 0; // placeholder visual
+      // if we have detailed logs, we could check completed_slots
+      const log=logByDate[dateForDay];
+      if(log && log.completed_slots){
+        doneCount= slots.filter(s=>log.completed_slots[s.id]).length;
+      }
+    }
+    const progress=slots.length? Math.round(doneCount/slots.length*100):0;
+    const dateLabel=new Date(dateForDay+'T00:00:00').toLocaleDateString('bn-BD',{day:'numeric',month:'short'});
+    return `
+    <div class="week-day-card" style="${isToday?'border-color:rgba(0,229,160,0.28);box-shadow:0 4px 20px rgba(0,229,160,0.08)':''}">
+      <div class="week-day-head ${isToday?'today':''}">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-weight:900;letter-spacing:-.01em">${labelBn}</span>
+          <span style="font-size:.6rem;opacity:.7;letter-spacing:.08em">${labelEn}</span>
+          ${isToday?'<span style="padding:2px 6px;border-radius:999px;background:var(--accent);color:#000;font-size:.58rem;font-weight:800">আজ</span>':''}
+        </div>
+        <span style="font-size:.68rem;color:var(--muted);font-weight:600">${dateLabel}</span>
+      </div>
+      <div style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <div style="font-size:.72rem;color:var(--muted);font-weight:700">${slots.length} স্লট • ${doneCount} সম্পন্ন</div>
+        <div style="font-size:.7rem;font-weight:800;color:${isToday?'var(--accent)': progress>0?'var(--accent2)':'var(--muted)'}">${progress}%</div>
+      </div>
+      <div style="flex:1; overflow-y:auto; max-height:220px">
+        ${slots.length? slots.map(sl=>{
+          const col=CAT_COLORS[sl.category]||'#6b6b7e';
+          // for today show real done, for other days show based on dateForDay log
+          let done=false;
+          if(isToday) done=!!completedSlots[sl.id];
+          else {
+            const log2=logByDate[dateForDay];
+            if(log2) done=!!log2.completed_slots?.[sl.id];
+            else done=false;
+          }
+          return `
+          <div class="week-mini-slot" style="${done?'background:rgba(0,229,160,0.06)':''}">
+            <span class="week-mini-dot" style="background:${col};box-shadow:0 0 6px ${col}66"></span>
+            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:.78rem;${done?'text-decoration:line-through;color:var(--muted)':''}">${sl.title}</span>
+            <span class="week-mini-check ${done?'done':''}">${done?'<i class="fa-solid fa-check" style="font-size:.5rem"></i>':''}</span>
+          </div>`;
+        }).join('') : `<div style="padding:20px;text-align:center;color:var(--muted);font-size:.78rem">কোনো স্লট নেই<br><span style="font-size:.68rem">Weekly editor এ যোগ করো</span></div>`}
+      </div>
+      <div style="padding:8px 12px;border-top:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:.68rem;color:var(--muted);font-weight:600">XP</span>
+        <span style="font-family:'Fraunces',serif;font-weight:900;color:${xpForDay>0?'var(--accent)':'var(--muted2)'}">${xpForDay}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.toggleSlot=function(slotId){
+  const slots=getTodaySlots();
+  const idx=slots.findIndex(s=>s.id===slotId);
+  if(idx<0) return;
+  const wasDone=!!completedSlots[slotId];
+  if(wasDone) delete completedSlots[slotId];
+  else completedSlots[slotId]=true;
+  recalcToday();
+  updateStats();
+  // --- FAST DOM PATCH for buttery 60fps (no full rerender) ---
+  const cont=document.getElementById('timeline');
+  const row = cont && cont.children[idx];
+  if(row){
+    const check=row.querySelector('.slot-check');
+    const card=row.querySelector('.slot-card');
+    const nowDone=!wasDone;
+    const catCol=CAT_COLORS[slots[idx].category]||CAT_COLORS.other;
+    if(check){
+      check.classList.toggle('done', nowDone);
+      check.innerHTML= nowDone ? '<i class="fa-solid fa-check" style="font-size:.85rem"></i>' : '<span style="width:8px;height:8px;border-radius:50%;background:'+catCol+';display:inline-block"></span>';
+    }
+    if(card){
+      card.classList.toggle('done', nowDone);
+      // patch XP badge
+      const pills=card.querySelectorAll('span');
+      for(let pill of pills){
+        const t=pill.textContent;
+        if(t.includes('XP') || t.includes('সম্পন্ন')){
+          pill.textContent = nowDone ? '✓ সম্পন্ন' : (slots[idx].xp||0)+' XP';
+          pill.style.background = nowDone ? 'var(--accent)' : 'rgba(255,255,255,0.06)';
+          pill.style.color = nowDone ? '#000' : 'var(--muted)';
+          pill.style.borderColor = nowDone ? 'var(--accent)' : 'rgba(255,255,255,0.08)';
+          break;
+        }
+      }
+      const cBtn=card.querySelector('button');
+      if(cBtn && cBtn.textContent.includes('কাস্টম')) cBtn.style.display = nowDone ? 'none' : '';
+    }
+  } else {
+    renderTimeline();
+  }
+  // defer weekly grid (not visible now) to idle
+  if(dashView==='week'){
+    requestAnimationFrame(()=> renderWeeklyGrid());
+  }
+  scheduleSave();
+  if(!wasDone){
+    spawnXPPop(slots[idx].xp||0, slotId);
+    showToast(`✓ ${slots[idx].title} +${slots[idx].xp||0} XP`);
+  } else {
+    showToast('আনডু করা হয়েছে');
+  }
+}
+function spawnXPPop(xp, slotId){
+  const el=document.createElement('div');
+  el.className='xp-pop';
+  el.textContent=`+${xp} XP`;
+  el.style.left='50%';
+  el.style.top='40%';
+  el.style.transform='translateX(-50%)';
+  el.style.color='var(--accent)';
+  el.style.textShadow='0 2px 12px rgba(0,229,160,0.4)';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1400);
+}
+
+/* ================= ROUTINES LIST ================= */
+function renderRoutinesList(){
+  const cont=document.getElementById('routines-list');
+  if(!routines.length){
+    cont.innerHTML=`<div class="empty-state card"><div class="empty-icon">🗂️</div><p>কোনো রুটিন নেই</p><button class="btn btn-accent btn-sm" onclick="openRoutineEditor(null)">নতুন রুটিন বানাও</button></div>`;
+    return;
+  }
+  cont.innerHTML=routines.map(r=>{
+    const isActive=r.id===activeRoutine?.id;
+    const slotCount= r.type==='weekly' ? WEEK_DAYS.reduce((s,d)=>s+(r.weeklySlots[d]?.length||0),0) : (r.slots.length||0);
+    const typeBadge= r.type==='weekly' ? `<span class="badge badge-accent2" style="font-size:.62rem">WEEKLY • ৭ দিন</span>` : `<span class="badge badge-muted" style="font-size:.62rem">DAILY</span>`;
+    const activeBadge= isActive? `<span class="badge badge-accent" style="font-size:.62rem">✓ ACTIVE</span>`:'';
+    // preview slots
+    let preview='';
+    if(r.type==='weekly'){
+      preview=WEEK_DAYS.map(d=>{
+        const cnt=r.weeklySlots[d]?.length||0;
+        const isToday=d===getTodayWeekdayKey() && isActive;
+        return `<span style="padding:4px 8px;border-radius:999px;background:${isToday?'var(--accent)':'rgba(255,255,255,0.06)'};color:${isToday?'#000':'var(--muted)'};border:1px solid ${isToday?'var(--accent)':'rgba(255,255,255,0.06)'};font-size:.68rem;font-weight:700">${WEEK_LABELS_BN[d]} ${cnt}</span>`;
+      }).join('');
+    } else {
+      preview=r.slots.slice(0,3).map(sl=>{
+        const col=CAT_COLORS[sl.category]||'#6b6b7e';
+        return `<span style="padding:3px 8px;border-radius:999px;background:${col}14;color:${col};border:1px solid ${col}22;font-size:.68rem;font-weight:700;white-space:nowrap">${sl.title}</span>`;
+      }).join('') + (r.slots.length>3? `<span style="font-size:.68rem;color:var(--muted)">+${r.slots.length-3}</span>`:'');
+    }
+    return `
+    <div class="card ${isActive?'card-elevated':''}" style="padding:16px;${isActive?'border-color:rgba(0,229,160,0.28)':''}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span style="font-weight:900;font-size:1.02rem;letter-spacing:-.02em">${r.name}</span>
+            ${typeBadge} ${activeBadge}
+            <span style="font-size:.68rem;color:var(--muted2)">${slotCount} স্লট</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${preview || '<span style="font-size:.72rem;color:var(--muted2)">কোনো স্লট নেই</span>'}</div>
+          ${r.type==='weekly'?`<div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap">${WEEK_DAYS.map(d=> r.weeklySlots[d].length? `<span style="font-size:.62rem;color:var(--muted);background:rgba(255,255,255,0.04);padding:2px 6px;border-radius:6px;border:1px solid rgba(255,255,255,0.06)">${WEEK_LABELS_BN[d]}: ${r.weeklySlots[d].length}</span>`:'').join('')}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          ${!isActive?`<button class="btn btn-accent btn-xs" onclick="setActiveRoutine('${r.id}')"><i class="fa-solid fa-check"></i> Active</button>`:''}
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-xs" onclick="openRoutineEditor('${r.id}')"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn-danger btn-xs" onclick="deleteRoutine('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.setActiveRoutine=async function(id){
+  const r=routines.find(x=>x.id===id);
+  if(!r) return;
+  showSync('busy','⏳...');
+  try{
+    await dbSetActiveRoutine(currentUser.username, id);
+    routines.forEach(x=> x.is_active = x.id===id);
+    activeRoutine=r;
+    updateStats(); renderTimeline(); renderWeeklyGrid(); renderRoutinesList();
+    showSync('ok','✓ Active পরিবর্তন হয়েছে');
+    showToast(`✓ ${r.name} active`);
+  }catch(e){ showSync('err','✗'); showToast('ব্যর্থ'); }
+}
+window.deleteRoutine=async function(id){
+  if(!confirm('এই রুটিন ডিলিট করবে?')) return;
+  showSync('busy','⏳...');
+  try{
+    await dbDeleteRoutine(id);
+    routines=routines.filter(x=>x.id!==id);
+    if(activeRoutine?.id===id){
+      activeRoutine= routines.find(x=>x.is_active) || routines[0] || null;
+      completedSlots={}; xpHistory[todayKey()]=0; coinsHistory[todayKey()]=0;
+    }
+    renderRoutinesList(); renderTimeline(); renderWeeklyGrid(); updateStats();
+    if(!routines.length) document.getElementById('onboarding').style.display='flex';
+    showSync('ok','✓ ডিলিট হয়েছে');
+  }catch(e){ showSync('err','✗'); }
+}
+
+/* ================= ROUTINE EDITOR ================= */
+function switchRoutineMode(mode){
+  document.getElementById('manual-mode-content').style.display= mode==='manual'?'flex':'none';
+  document.getElementById('ai-mode-content').style.display= mode==='ai'?'flex':'none';
+  document.getElementById('mode-manual-btn').className= mode==='manual'?'btn btn-accent btn-sm btn-full':'btn btn-ghost btn-sm btn-full';
+  document.getElementById('mode-ai-btn').className= mode==='ai'?'btn btn-accent2 btn-sm btn-full':'btn btn-ghost btn-sm btn-full';
+}
+window.switchRoutineMode=switchRoutineMode;
+function switchRoutineType(type){
+  routineType=type;
+  document.getElementById('rtype-daily').classList.toggle('active', type==='daily');
+  document.getElementById('rtype-weekly').classList.toggle('active', type==='weekly');
+  document.getElementById('daily-builder').style.display= type==='daily'?'block':'none';
+  document.getElementById('weekly-builder').style.display= type==='weekly'?'block':'none';
+  document.getElementById('rtype-hint').textContent= type==='weekly'
+    ? 'সপ্তাহের প্রতিদিন আলাদা স্লট — পুরো সপ্তাহের কন্ট্রোল তোমার হাতে।'
+    : 'প্রতিদিন একই স্লট চলবে — সহজ ও ফোকাসড।';
+  if(type==='weekly') renderWeeklyTabs();
+}
+window.switchRoutineType=switchRoutineType;
+
+function renderWeeklyTabs(){
+  const tabs=document.getElementById('weekly-day-tabs');
+  tabs.innerHTML=WEEK_DAYS.map(d=>{
+    const cnt=weeklySlotsDraft[d]?.length||0;
+    const active=d===weeklyActiveDay;
+    return `<button class="day-tab ${active?'active':''} ${cnt?'has-slots':''}" onclick="switchWeeklyDay('${d}')">${WEEK_LABELS_BN[d]} • ${cnt}</button>`;
+  }).join('');
+  document.getElementById('weekly-day-title').textContent= `${WEEK_LABELS_BN[weeklyActiveDay]} — ${weeklySlotsDraft[weeklyActiveDay].length} স্লট`;
+  renderWeeklyBuilder();
+}
+window.switchWeeklyDay=function(day){
+  weeklyActiveDay=day;
+  renderWeeklyTabs();
+}
+function renderWeeklyBuilder(){
+  const cont=document.getElementById('weekly-slot-builder');
+  const slots=weeklySlotsDraft[weeklyActiveDay]||[];
+  if(!slots.length){
+    cont.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:.82rem;border:1px dashed rgba(255,255,255,0.08);border-radius:12px">এই দিনে কোনো স্লট নেই — “+ স্লট” চাপো</div>`;
+    return;
+  }
+  cont.innerHTML=slots.map((sl,idx)=>`
+    <div class="slot-builder-row" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:10px">
+      <div>
+        <label style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">টাইটেল</label>
+        <input class="inp" style="margin-top:4px;padding:.5rem .75rem;font-size:.82rem" value="${sl.title.replace(/"/g,'&quot;')}" onchange="updateWeeklySlot('${weeklyActiveDay}',${idx},'title',this.value)" placeholder="যেমন: Math — Calculus">
+      </div>
+      <div>
+        <label style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">শুরু</label>
+        <input class="inp" style="margin-top:4px;padding:.5rem .75rem;font-size:.82rem" value="${sl.start}" onchange="updateWeeklySlot('${weeklyActiveDay}',${idx},'start',this.value)" placeholder="6:00 AM">
+      </div>
+      <div>
+        <label style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">শেষ</label>
+        <input class="inp" style="margin-top:4px;padding:.5rem .75rem;font-size:.82rem" value="${sl.end}" onchange="updateWeeklySlot('${weeklyActiveDay}',${idx},'end',this.value)" placeholder="7:00 AM">
+      </div>
+      <div>
+        <label style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">XP</label>
+        <input type="number" class="inp" style="margin-top:4px;padding:.5rem .75rem;font-size:.82rem;text-align:center" value="${sl.xp||0}" onchange="updateWeeklySlot('${weeklyActiveDay}',${idx},'xp',parseInt(this.value)||0)">
+      </div>
+      <div class="builder-actions" style="display:flex;gap:6px;align-items:end">
+        <select class="inp" style="padding:.5rem .5rem;font-size:.75rem" onchange="updateWeeklySlot('${weeklyActiveDay}',${idx},'category',this.value)">
+          ${Object.keys(CAT_COLORS).map(c=>`<option value="${c}" ${sl.category===c?'selected':''}>${CAT_LABELS[c]}</option>`).join('')}
+        </select>
+        <button class="btn btn-ghost btn-icon" style="width:32px;height:32px;background:rgba(255,90,90,0.08);border-color:rgba(255,90,90,0.15);color:var(--danger)" onclick="removeWeeklySlot('${weeklyActiveDay}',${idx})"><i class="fa-solid fa-trash" style="font-size:.7rem"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+window.updateWeeklySlot=function(day,idx,field,val){
+  if(!weeklySlotsDraft[day][idx]) return;
+  weeklySlotsDraft[day][idx][field]=val;
+  if(field==='category' || field==='title') renderWeeklyTabs();
+}
+window.removeWeeklySlot=function(day,idx){
+  weeklySlotsDraft[day].splice(idx,1);
+  renderWeeklyTabs();
+}
+window.addWeeklySlot=function(){
+  const id='sl_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  if(!weeklySlotsDraft[weeklyActiveDay]) weeklySlotsDraft[weeklyActiveDay]=[];
+  weeklySlotsDraft[weeklyActiveDay].push({id, title:'নতুন স্লট', start:'6:00 AM', end:'7:00 AM', category:'study', xp:25, desc:''});
+  renderWeeklyTabs();
+}
+window.copyPrevDay=function(){
+  const idx=WEEK_DAYS.indexOf(weeklyActiveDay);
+  if(idx<=0){ showToast('আগের দিন নেই'); return; }
+  const prev=WEEK_DAYS[idx-1];
+  const prevSlots=weeklySlotsDraft[prev]||[];
+  if(!prevSlots.length){ showToast('আগের দিনে স্লট নেই'); return; }
+  // deep copy with new ids
+  weeklySlotsDraft[weeklyActiveDay]=prevSlots.map(s=>({...s, id:'sl_'+Date.now()+'_'+Math.random().toString(36).slice(2,5)}));
+  renderWeeklyTabs();
+  showToast(`✓ ${WEEK_LABELS_BN[prev]} থেকে কপি হয়েছে`);
+}
+
+function addSlotRow(data={}){
+  const cont=document.getElementById('slot-builder');
+  const id=data.id || 'sl_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  const row=document.createElement('div');
+  row.className='slot-builder-row';
+  row.style.background='rgba(255,255,255,0.03)';
+  row.style.border='1px solid rgba(255,255,255,0.06)';
+  row.style.borderRadius='12px';
+  row.style.padding='10px';
+  row.dataset.id=id;
+  row.innerHTML=`
+    <div>
+      <label style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">টাইটেল</label>
+      <input class="inp slot-title" style="margin-top:4px;padding:.5rem .75rem;font-size:.82rem" value="${(data.title||'').replace(/"/g,'&quot;')}" placeholder="যেমন: Physics">
+    </div>
+    <div>
+      <label style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">শুরু</label>
+      <input class="inp slot-start" style="margin-top:4px;padding:.5rem .75rem;font-size:.82rem" value="${data.start||'6:00 AM'}" placeholder="6:00 AM">
+    </div>
+    <div>
+      <label style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">শেষ</label>
+      <input class="inp slot-end" style="margin-top:4px;padding:.5rem .75rem;font-size:.82rem" value="${data.end||'7:00 AM'}" placeholder="7:00 AM">
+    </div>
+    <div>
+      <label style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">XP</label>
+      <input type="number" class="inp slot-xp" style="margin-top:4px;padding:.5rem .75rem;font-size:.82rem;text-align:center" value="${data.xp||25}">
+    </div>
+    <div class="builder-actions" style="display:flex;gap:6px;align-items:end">
+      <select class="inp slot-cat" style="padding:.5rem .5rem;font-size:.75rem">
+        ${Object.keys(CAT_COLORS).map(c=>`<option value="${c}" ${data.category===c?'selected':''}>${CAT_LABELS[c]}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost btn-icon" style="width:32px;height:32px;background:rgba(255,90,90,0.08);border-color:rgba(255,90,90,0.15);color:var(--danger)" onclick="this.closest('.slot-builder-row').remove()"><i class="fa-solid fa-trash" style="font-size:.7rem"></i></button>
+    </div>
+  `;
+  cont.appendChild(row);
+}
+window.addSlotRow=addSlotRow;
+
+window.openRoutineEditor=function(id){
+  editingRoutineId=id;
+  const r=id? routines.find(x=>x.id===id):null;
+  document.getElementById('routine-modal-title').textContent= r? 'রুটিন এডিট' : 'নতুন রুটিন';
+  document.getElementById('routine-name-inp').value= r? r.name : '';
+  switchRoutineMode('manual');
+  if(r){
+    routineType=r.type||'daily';
+    switchRoutineType(routineType);
+    if(routineType==='weekly'){
+      weeklySlotsDraft=JSON.parse(JSON.stringify(r.weeklySlots||{sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]}));
+      WEEK_DAYS.forEach(d=>{ if(!Array.isArray(weeklySlotsDraft[d])) weeklySlotsDraft[d]=[]; });
+      weeklyActiveDay='sat';
+      renderWeeklyTabs();
+      document.getElementById('slot-builder').innerHTML='';
+    } else {
+      document.getElementById('slot-builder').innerHTML='';
+      (r.slots||[]).forEach(s=> addSlotRow(s));
+      weeklySlotsDraft={sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]};
+    }
+  } else {
+    routineType='daily';
+    switchRoutineType('daily');
+    document.getElementById('slot-builder').innerHTML='';
+    weeklySlotsDraft={sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]};
+    // add 2 default slots
+    addSlotRow({title:'Wake & Prep', start:'5:30 AM', end:'6:00 AM', category:'wake', xp:5});
+    addSlotRow({title:'Deep Study', start:'6:00 AM', end:'8:00 AM', category:'study', xp:40});
+  }
+  openModal('modal-routine');
+}
+window.closeRoutineEditor=function(){ closeModal('modal-routine'); editingRoutineId=null; }
+window.saveRoutine=async function(){
+  const name=document.getElementById('routine-name-inp').value.trim();
+  if(!name){ showToast('রুটিনের নাম দাও'); return; }
+  let payload={ id:editingRoutineId, name, type:routineType, is_active:false };
+  if(routineType==='daily'){
+    const rows=[...document.querySelectorAll('#slot-builder .slot-builder-row')];
+    const slots=rows.map(row=>{
+      const id=row.dataset.id;
+      const title=row.querySelector('.slot-title').value.trim()||'Untitled';
+      const start=row.querySelector('.slot-start').value.trim()||'6:00 AM';
+      const end=row.querySelector('.slot-end').value.trim()||'7:00 AM';
+      const xp=parseInt(row.querySelector('.slot-xp').value)||10;
+      const category=row.querySelector('.slot-cat').value;
+      return {id, title, start, end, category, xp, desc:''};
+    });
+    if(!slots.length){ showToast('অন্তত ১টা স্লট যোগ করো'); return; }
+    payload.slots=slots;
+    payload.weeklySlots={sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]};
+  } else {
+    // weekly
+    // validate each day has at least something? allow empty but total must have at least 3 slots
+    const totalSlots=WEEK_DAYS.reduce((s,d)=>s+(weeklySlotsDraft[d]?.length||0),0);
+    if(totalSlots<2){ showToast('সপ্তাহে অন্তত ২টা স্লট যোগ করো'); return; }
+    // validate times
+    for(const d of WEEK_DAYS){
+      for(const sl of weeklySlotsDraft[d]){
+        if(!sl.title.trim()){ showToast(`${WEEK_LABELS_BN[d]} — টাইটেল দাও`); return; }
+        if(!sl.start || !sl.end){ showToast(`${WEEK_LABELS_BN[d]} — সময় দাও`); return; }
+      }
+    }
+    payload.slots=[];
+    payload.weeklySlots=JSON.parse(JSON.stringify(weeklySlotsDraft));
+  }
+  showSync('busy','⏳ সেভ হচ্ছে…');
+  try{
+    const isNew=!editingRoutineId;
+    if(isNew) payload.is_active = routines.length===0; // first routine auto active
+    else {
+      const existing=routines.find(r=>r.id===editingRoutineId);
+      payload.is_active= existing? existing.is_active : false;
+    }
+    const saved=await dbSaveRoutine(payload);
+    if(isNew) routines.push(saved);
+    else {
+      const idx=routines.findIndex(r=>r.id===editingRoutineId);
+      if(idx>=0) routines[idx]=saved;
+    }
+    if(saved.is_active) activeRoutine=saved;
+    else if(!activeRoutine) activeRoutine=saved;
+    renderRoutinesList(); renderTimeline(); renderWeeklyGrid(); updateStats();
+    closeRoutineEditor();
+    document.getElementById('onboarding').style.display='none';
+    showSync('ok','✓ সেভ হয়েছে'); showToast('✓ রুটিন সেভ হয়েছে');
+  }catch(e){ showSync('err','✗'); showToast('সেভ ব্যর্থ: '+e.message); }
+}
+
+// ================= AI — COPY PROMPT / PASTE JSON (efficient, lag-free) =================
+let aiRtype = 'daily'; // daily | weekly
+window.switchAiRtype = function(type){
+  aiRtype = type;
+  document.getElementById('ai-rtype-daily').classList.toggle('active', type==='daily');
+  document.getElementById('ai-rtype-weekly').classList.toggle('active', type==='weekly');
+  const hint = document.getElementById('ai-rtype-hint');
+  if(hint) hint.textContent = type==='weekly' ? 'Weekly — ৭ দিন আলাদা স্লট, প্রতি দিন কাস্টম।' : 'Daily — একই রুটিন প্রতিদিন চলবে।';
+}
+window.generateAIPrompt = function(){
+  const wake = document.getElementById('ai-wake').value.trim();
+  const sleep = document.getElementById('ai-sleep').value.trim();
+  const subjects = document.getElementById('ai-subjects').value.trim();
+  const extra = document.getElementById('ai-extra').value.trim();
+  if(!wake || !sleep){ showToast('ঘুম ও ওঠার সময় দাও'); return; }
+  let prompt;
+  if(aiRtype==='weekly'){
+    prompt = `আমার জন্য একটি পূর্ণ সাপ্তাহিক রুটিন তৈরি করো (শনি থেকে শুক্র, প্রতিদিন আলাদা স্লট)।
+
+আমার তথ্য:
+- ঘুম থেকে ওঠার সময়: ${wake}
+- ঘুমাতে যাওয়ার সময়: ${sleep}
+- পড়াশোনা: ${subjects || 'উল্লেখ নেই'}
+${extra ? `- অন্যান্য: ${extra}` : ''}
+
+প্রথমে রুটিনটি সুন্দরভাবে দেখাও এবং জিজ্ঞেস করো আমি কনফার্ম করতে চাই কিনা।
+
+আমি কনফার্ম করলে, নিচের JSON ফরম্যাটে দাও (শুধু JSON, আর কিছু না):
+
+{
+  "routine_name": "রুটিনের নাম",
+  "routine_type": "weekly",
+  "weeklySlots": {
+    "sat": [{ "id": "sl_sat_1", "title": "স্লটের নাম", "start": "07:00 AM", "end": "08:00 AM", "category": "study", "xp": 40 }],
+    "sun": [],
+    "mon": [],
+    "tue": [],
+    "wed": [],
+    "thu": [],
+    "fri": []
+  }
+}
+
+নিয়মাবলী:
+- category শুধু: study, break, rest, nap, wake, sleep, meal, prep, winddown, other
+- সময়: "HH:MM AM/PM" (যেমন "07:30 AM")
+- XP: study প্রতি ঘন্টায় ~40-50, বাকিগুলো 5-10
+- প্রতি দিন 4-7 টা স্লট, পুরো দিন কভার, কোনো ফাঁক না
+- weeklySlots এ ৭ টা key ই থাকবে (sat,sun,mon,tue,wed,thu,fri)`;
+  } else {
+    prompt = `আমার জন্য একটি পূর্ণ দৈনিক রুটিন তৈরি করো।
+
+আমার তথ্য:
+- ঘুম থেকে ওঠার সময়: ${wake}
+- ঘুমাতে যাওয়ার সময়: ${sleep}
+- পড়াশোনা: ${subjects || 'উল্লেখ নেই'}
+${extra ? `- অন্যান্য: ${extra}` : ''}
+
+প্রথমে রুটিনটি দেখাও এবং জিজ্ঞেস করো আমি কনফার্ম করতে চাই কিনা।
+
+আমি কনফার্ম করলে, নিচের JSON ফরম্যাটে দাও:
+
+{
+  "routine_name": "রুটিনের নাম",
+  "slots": [
+    { "id": "sl_1", "title": "স্লটের নাম", "desc": "", "start": "07:00 AM", "end": "08:00 AM", "category": "study", "xp": 40 }
+  ]
+}
+
+নিয়মাবলী:
+- category শুধু: study, break, rest, nap, wake, sleep, meal, prep, winddown, other
+- সময়: "HH:MM AM/PM"
+- XP: study প্রতি ঘন্টায় ~40-50, বাকি 5-10
+- সব স্লট মিলিয়ে পুরো দিন কভার`;
+  }
+  document.getElementById('ai-generated-prompt').textContent = prompt;
+  const sec = document.getElementById('ai-prompt-section');
+  sec.style.display = 'flex';
+  // lightweight scroll without layout thrash
+  requestAnimationFrame(()=> sec.scrollIntoView({behavior:'smooth', block:'nearest'}));
+  showToast('✓ প্রম্পট তৈরি — কপি করো');
+}
+window.copyPrompt = function(){
+  const text = document.getElementById('ai-generated-prompt').textContent;
+  const btn = document.getElementById('copy-prompt-btn');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      const old = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> কপি হয়েছে!';
+      btn.style.color = 'var(--accent)';
+      setTimeout(()=>{ btn.innerHTML = old; btn.style.color=''; }, 1800);
+    }).catch(fallbackCopy);
+  } else fallbackCopy();
+  function fallbackCopy(){
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); showToast('প্রম্পট কপি হয়েছে ✓'); }catch(e){ showToast('কপি ব্যর্থ — ম্যানুয়াল কপি করো'); }
+    document.body.removeChild(ta);
+  }
+}
+// Efficient, lag-free preview: debounced + cheap DOM
+let _previewTimer = null;
+window.debouncedPreview = function(){
+  clearTimeout(_previewTimer);
+  _previewTimer = setTimeout(()=> parseJSONPreview(), 350);
+}
+window.parseJSONPreview = function(){
+  const raw = document.getElementById('ai-json-input').value.trim();
+  const errEl = document.getElementById('ai-json-error');
+  const previewEl = document.getElementById('ai-json-preview');
+  errEl.style.display='none'; previewEl.style.display='none'; previewEl.innerHTML='';
+  if(!raw){ errEl.textContent='JSON পেস্ট করো'; errEl.style.display='block'; return null; }
+  let parsed;
+  try{
+    // extract first JSON object efficiently (avoid greedy)
+    const m = raw.match(/\{[\s\S]*\}/);
+    const src = m ? m[0] : raw;
+    parsed = JSON.parse(src);
+  }catch(e){
+    errEl.textContent='❌ JSON ভুল — ChatGPT আউটপুট পুরোটা কপি করো ({} সহ)'; errEl.style.display='block'; return null;
+  }
+  // Detect type
+  const isWeekly = parsed.weeklySlots && typeof parsed.weeklySlots==='object' && !Array.isArray(parsed.weeklySlots);
+  const slots = parsed.slots;
+  if(!isWeekly && !Array.isArray(slots)){
+    errEl.textContent='❌ slots বা weeklySlots পাওয়া যায়নি'; errEl.style.display='block'; return null;
+  }
+  if(isWeekly){
+    const total = WEEK_DAYS.reduce((s,d)=> s + (Array.isArray(parsed.weeklySlots[d]) ? parsed.weeklySlots[d].length : 0), 0);
+    if(total===0){ errEl.textContent='❌ weeklySlots খালি'; errEl.style.display='block'; return null; }
+    // Efficient render: build string once, no per-item DOM thrash
+    let html = `<div style="font-size:.76rem;font-weight:800;color:var(--accent);margin-bottom:8px">✓ ${total} স্লট • "${(parsed.routine_name||'Weekly').slice(0,40)}" • Weekly</div>`;
+    html += `<div style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding-right:4px">`;
+    for(const d of WEEK_DAYS){
+      const arr = parsed.weeklySlots[d] || [];
+      if(!arr.length) continue;
+      html += `<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:8px"><div style="font-weight:800;font-size:.72rem;color:var(--accent2);margin-bottom:6px">${WEEK_LABELS_BN[d]} — ${arr.length}</div>`;
+      for(let i=0;i<Math.min(arr.length,6);i++){
+        const sl=arr[i];
+        html += `<div style="display:flex;gap:8px;padding:4px 8px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:4px"><span style="font-size:.62rem;color:var(--muted);min-width:92px">${(sl.start||'?')}–${(sl.end||'?')}</span><span style="font-weight:600;font-size:.78rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(sl.title||'?')}</span><span style="font-size:.58rem;font-weight:800;padding:1px 6px;border-radius:999px;background:${(CAT_COLORS[sl.category]||'#666')}22;color:${(CAT_COLORS[sl.category]||'#666')}">${(sl.xp||0)} XP</span></div>`;
+      }
+      if(arr.length>6) html += `<div style="font-size:.62rem;color:var(--muted);text-align:center">+${arr.length-6} আরও</div>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+    previewEl.innerHTML = html;
+  } else {
+    if(!slots.length){ errEl.textContent='❌ slots খালি'; errEl.style.display='block'; return null; }
+    let html = `<div style="font-size:.76rem;font-weight:800;color:var(--accent);margin-bottom:8px">✓ ${slots.length} স্লট • "${(parsed.routine_name||'Routine').slice(0,40)}"</div><div style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;padding-right:4px">`;
+    for(let i=0;i<Math.min(slots.length,12);i++){
+      const sl=slots[i];
+      html += `<div style="display:flex;gap:8px;padding:6px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px"><span style="font-size:.62rem;color:var(--muted);min-width:96px">${(sl.start||'?')}–${(sl.end||'?')}</span><span style="font-weight:600;font-size:.78rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(sl.title||'?')}</span><span style="font-size:.58rem;font-weight:800;padding:1px 6px;border-radius:999px;background:${(CAT_COLORS[sl.category]||'#666')}22;color:${(CAT_COLORS[sl.category]||'#666')}">${(sl.xp||0)} XP</span></div>`;
+    }
+    if(slots.length>12) html += `<div style="font-size:.62rem;color:var(--muted);text-align:center">+${slots.length-12} আরও</div>`;
+    html += `</div>`;
+    previewEl.innerHTML = html;
+  }
+  previewEl.style.display='block';
+  return parsed;
+}
+window.importJSONRoutine = async function(){
+  const parsed = parseJSONPreview();
+  if(!parsed) return;
+  const isWeekly = parsed.weeklySlots && typeof parsed.weeklySlots==='object' && !Array.isArray(parsed.weeklySlots);
+  let payload;
+  if(isWeekly){
+    const weeklySlots = {sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]};
+    for(const d of WEEK_DAYS){
+      const arr = Array.isArray(parsed.weeklySlots[d]) ? parsed.weeklySlots[d] : [];
+      weeklySlots[d] = arr.map((sl,i)=>({
+        id: sl.id || 'sl_'+d+'_'+i+'_'+Date.now().toString(36).slice(2,4),
+        title: (sl.title||'স্লট').slice(0,60),
+        desc: (sl.desc||'').slice(0,120),
+        start: sl.start || '07:00 AM',
+        end: sl.end || '08:00 AM',
+        category: CAT_COLORS[sl.category] ? sl.category : 'other',
+        xp: Number.isFinite(+sl.xp) ? Math.min(Math.max(0, +sl.xp), 120) : 25
+      }));
+    }
+    payload = { id:null, name:(parsed.routine_name||'Weekly Routine').slice(0,60), type:'weekly', slots:[], weeklySlots, is_active:true };
+  } else {
+    const slots = (parsed.slots||[]).map((sl,i)=>({
+      id: sl.id || 'sl_'+i+'_'+Date.now().toString(36).slice(2,4),
+      title: (sl.title||'স্লট').slice(0,60),
+      desc: (sl.desc||'').slice(0,120),
+      start: sl.start || '07:00 AM',
+      end: sl.end || '08:00 AM',
+      category: CAT_COLORS[sl.category] ? sl.category : 'other',
+      xp: Number.isFinite(+sl.xp) ? Math.min(Math.max(0,+sl.xp),120) : 25
+    }));
+    payload = { id:null, name:(parsed.routine_name||'AI Routine').slice(0,60), type:'daily', slots, weeklySlots:{sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]}, is_active:true };
+  }
+  showSync('busy','⏳ ইম্পোর্ট হচ্ছে…');
+  try{
+    await dbSetActiveRoutine(currentUser.username, null);
+    const saved = await dbSaveRoutine(payload);
+    routines = await dbGetRoutines(currentUser.username).then(list=> list.map(normalizeRoutine));
+    // re-apply weekly/local fix
+    routines.forEach(r=>{
+      const cached=localStorage.getItem('rx_routine_type_'+r.id);
+      if(cached==='weekly' && r.type!=='weekly'){
+        try{ const ws=JSON.parse(localStorage.getItem('rx_weekly_'+r.id)||'null'); if(ws) r.weeklySlots=ws; r.type='weekly'; }catch(e){}
+      }
+    });
+    activeRoutine = routines.find(x=>x.id===saved.id) || routines.find(x=>x.is_active);
+    completedSlots={};
+    document.getElementById('ai-json-input').value='';
+    document.getElementById('ai-json-preview').style.display='none';
+    document.getElementById('ai-prompt-section').style.display='none';
+    // reset prompt inputs for lag-free reuse
+    // keep wake/sleep for next time
+    renderRoutinesList(); renderTimeline(); renderWeeklyGrid(); updateStats();
+    closeModal('modal-routine');
+    document.getElementById('onboarding').style.display='none';
+    showSync('ok','✓'); showToast('✓ রুটিন ইম্পোর্ট হয়েছে');
+  }catch(e){ showSync('err','✗'); showToast('ইম্পোর্ট ব্যর্থ: '+(e.message||'')); }
+}
 
 
+/* ================= VIEW SWITCHER ================= */
+window.switchView=function(view){
+  // instant, GPU-friendly view switch (no smooth scroll jank)
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const target=document.getElementById('view-'+view);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.bnav-item').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view===view);
+  });
+  window.scrollTo(0,0);
+  // defer heavy work to next frame — keeps footer tap buttery
+  requestAnimationFrame(()=>{
+    if(view==='history'){
+      // lazy: only render once or when data changed
+      if(!histWeeklyChart) renderHistory();
+    } else if(view==='leaderboard'){
+      if(!allLogs.length) loadLeaderboard();
+      else renderLeaderboard();
+    } else if(view==='shop'){
+      renderShop();
+    } else if(view==='tasks'){
+      renderTasks();
+    } else if(view==='dashboard'){
+      // only render visible sub-view
+      if(dashView==='today') renderTimeline();
+      else renderWeeklyGrid();
+    }
+  });
+}
 
+/* ================= TASKS ================= */
+async function renderTasks(){
+  const cont=document.getElementById('tasks-list');
+  const prog=document.getElementById('tasks-progress');
+  const bar=document.getElementById('tasks-progress-bar');
+  if(!tasks.length){
+    cont.innerHTML='<div class="empty-state card"><div class="empty-icon">✅</div><p>কোনো টাস্ক নেই — নতুন টাস্ক যোগ করো</p></div>';
+    prog.textContent='0/0'; bar.style.width='0%'; return;
+  }
+  const done=tasks.filter(t=>t.done).length;
+  prog.textContent=`${done}/${tasks.length}`;
+  bar.style.width= tasks.length? (done/tasks.length*100)+'%':'0%';
+  cont.innerHTML=tasks.map(t=>`
+    <div class="card" style="padding:14px;display:flex;align-items:flex-start;gap:12px;${t.done?'opacity:.6':''}">
+      <button onclick="toggleTask('${t.id}')" style="width:22px;height:22px;border-radius:50%;border:1.5px solid ${t.done?'var(--accent)':'rgba(255,255,255,0.18)'};background:${t.done?'var(--accent)':'transparent'};display:grid;place-items:center;flex-shrink:0;margin-top:2px;cursor:pointer">
+        ${t.done?'<i class="fa-solid fa-check" style="font-size:.6rem;color:#000"></i>':''}
+      </button>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.9rem;${t.done?'text-decoration:line-through;color:var(--muted)':''}">${t.title}</div>
+        ${t.desc?`<div style="font-size:.78rem;color:var(--muted);margin-top:2px">${t.desc}</div>`:''}
+        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+          <span class="badge" style="background:${t.priority==='high'?'rgba(255,90,90,0.12)': t.priority==='medium'?'rgba(251,191,36,0.12)':'rgba(255,255,255,0.06)'};color:${t.priority==='high'?'var(--danger)': t.priority==='medium'?'var(--coin)':'var(--muted)'};border-color:${t.priority==='high'?'rgba(255,90,90,0.18)': t.priority==='medium'?'rgba(251,191,36,0.18)':'rgba(255,255,255,0.06)'}">${t.priority}</span>
+          ${t.due?`<span style="font-size:.68rem;color:var(--muted)"><i class="fa-regular fa-calendar"></i> ${t.due}</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-icon" style="width:30px;height:30px" onclick="openTaskEditor('${t.id}')"><i class="fa-solid fa-pen" style="font-size:.7rem"></i></button>
+        <button class="btn btn-ghost btn-icon" style="width:30px;height:30px;color:var(--danger)" onclick="deleteTask('${t.id}')"><i class="fa-solid fa-trash" style="font-size:.7rem"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+window.openTaskEditor=function(id=null){
+  editingTaskId=id;
+  const t=id? tasks.find(x=>x.id===id):null;
+  document.getElementById('task-modal-title').textContent= t? 'টাস্ক এডিট' : 'নতুন টাস্ক';
+  document.getElementById('task-title-inp').value= t? t.title : '';
+  document.getElementById('task-desc-inp').value= t? t.desc||'' : '';
+  document.getElementById('task-prio-inp').value= t? t.priority : 'medium';
+  document.getElementById('task-due-inp').value= t? t.due||'' : '';
+  openModal('modal-task');
+}
+window.closeTaskEditor=function(){ closeModal('modal-task'); editingTaskId=null; }
+window.saveTask=async function(){
+  const title=document.getElementById('task-title-inp').value.trim();
+  if(!title){ showToast('টাইটেল দাও'); return; }
+  const desc=document.getElementById('task-desc-inp').value.trim();
+  const prio=document.getElementById('task-prio-inp').value;
+  const due=document.getElementById('task-due-inp').value;
+  if(editingTaskId){
+    const t=tasks.find(x=>x.id===editingTaskId);
+    if(t){ t.title=title; t.desc=desc; t.priority=prio; t.due=due; }
+    try{ await sb.from('tasks').update({title,desc,priority:prio,due}).eq('id',editingTaskId); }catch(e){}
+  } else {
+    const newTask={id:'ts_'+Date.now(), username:currentUser.username.toLowerCase(), title, desc, priority:prio, due, done:false, created_at:new Date().toISOString()};
+    tasks.unshift(newTask);
+    try{
+      const {data}=await sb.from('tasks').insert(newTask).select().single();
+      if(data) newTask.id=data.id;
+    }catch(e){ localStorage.setItem('rx_tasks_'+currentUser.username, JSON.stringify(tasks)); }
+  }
+  try{ localStorage.setItem('rx_tasks_'+currentUser.username, JSON.stringify(tasks)); }catch(e){}
+  renderTasks(); closeTaskEditor(); showToast('✓ টাস্ক সেভ হয়েছে');
+}
+window.toggleTask=async function(id){
+  const t=tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.done=!t.done;
+  renderTasks();
+  try{ await sb.from('tasks').update({done:t.done}).eq('id',id); }catch(e){}
+  try{ localStorage.setItem('rx_tasks_'+currentUser.username, JSON.stringify(tasks)); }catch(e){}
+}
+window.deleteTask=async function(id){
+  if(!confirm('ডিলিট করবে?')) return;
+  tasks=tasks.filter(x=>x.id!==id);
+  renderTasks();
+  try{ await sb.from('tasks').delete().eq('id',id); }catch(e){}
+  try{ localStorage.setItem('rx_tasks_'+currentUser.username, JSON.stringify(tasks)); }catch(e){}
+}
+
+/* ================= LEADERBOARD ================= */
+window.switchLBTab=function(tab){
+  currentLBTab=tab;
+  document.getElementById('lb-tab-all').className= tab==='all'?'btn btn-accent btn-sm':'btn btn-ghost btn-sm';
+  document.getElementById('lb-tab-weekly').className= tab==='weekly'?'btn btn-accent btn-sm':'btn btn-ghost btn-sm';
+  document.getElementById('lb-tab-today').className= tab==='today'?'btn btn-accent btn-sm':'btn btn-ghost btn-sm';
+  document.getElementById('lb-today-banner').style.display= tab==='today'?'flex':'none';
+  renderLeaderboard();
+}
+async function loadLeaderboard(){
+  document.getElementById('lb-list').innerHTML='<div style="text-align:center;padding:24px;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে…</div>';
+  try{ allLogs=await dbGetAllLogs(); renderLeaderboard(); }
+  catch(e){ document.getElementById('lb-list').innerHTML='<div class="empty-state"><p>লোড ব্যর্থ</p></div>'; }
+}
+function renderLeaderboard(){
+  const days7=new Set(lastNDays(7));
+  const today=todayKey();
+  const agg={};
+  allLogs.forEach(l=>{
+    if(!agg[l.username]) agg[l.username]={username:l.username,total:0,weekly:0,today:0};
+    agg[l.username].total+=l.xp||0;
+    if(days7.has(l.date)) agg[l.username].weekly+=l.xp||0;
+    if(l.date===today) agg[l.username].today=l.xp||0;
+  });
+  const todayMax=Math.max(1,...Object.values(agg).map(u=>u.today));
+  let sorted=Object.values(agg).sort((a,b)=>{
+    const key=currentLBTab==='weekly'?'weekly': currentLBTab==='today'?'today':'total';
+    return b[key]-a[key];
+  });
+  const scoreKey=currentLBTab==='weekly'?'weekly': currentLBTab==='today'?'today':'total';
+  const top5=sorted.slice(0,5);
+  const COLORS=['#00e5a0','#7c6af7','#f7a06a','#3b82f6','#ec4899'];
+  if(lbChart) lbChart.destroy();
+  const ctx=document.getElementById('lb-chart').getContext('2d');
+  lbChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:top5.map(u=>u.username),
+      datasets:[{label:'XP', data:top5.map(u=>u[scoreKey]), backgroundColor:top5.map((_,i)=>COLORS[i]||'#6b6b7e'), borderRadius:9, borderSkipped:false}]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}, title:{display:true, text: currentLBTab==='weekly'?'সাপ্তাহিক টপ ৫': currentLBTab==='today'?'আজকের টপ ৫':'সর্বকালীন টপ ৫', color:'#f0f0f5', font:{size:13, weight:'700'}}},
+      scales:{x:{ticks:{color:'#8b8ba0'}, grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'#8b8ba0'}, grid:{color:'rgba(255,255,255,0.04)'}, beginAtZero:true}}
+    }
+  });
+  const list=document.getElementById('lb-list');
+  if(!sorted.length){ list.innerHTML='<div class="empty-state"><div class="empty-icon">🏆</div><p>এখনো কোনো ডেটা নেই</p></div>'; return; }
+  list.innerHTML=sorted.slice(0,20).map((u,i)=>{
+    const rankClass=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const isMe=u.username===currentUser?.username?.toLowerCase();
+    const todayPct=Math.round((u.today/todayMax)*100);
+    return `<div class="lb-row ${isMe?'me':''}" style="cursor:pointer" onclick="openUserProfile('${u.username}')">
+      <span class="lb-rank ${rankClass}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span>
+      <div class="avatar" style="width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.82rem;background:${COLORS[i]||'#6b7b8a'}22;color:${COLORS[i]||'#6b7b8a'};border:1px solid ${COLORS[i]||'#6b7b8a'}33">${u.username.charAt(0).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-weight:800;font-size:.88rem;letter-spacing:-.01em">${u.username}${isMe?' <span style="font-size:.65rem;color:var(--accent);font-weight:800">(তুমি)</span>':''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+          <div class="lb-today-bar" style="flex:1;max-width:90px"><div class="lb-today-fill" style="width:${todayPct}%"></div></div>
+          <span style="font-size:.68rem;color:var(--accent);font-weight:700">${u.today>0?'+'+u.today+' আজ':''}</span>
+        </div>
+      </div>
+      <div style="font-family:'Fraunces',serif;font-weight:900;color:${i<3?['#fbbf24','#cbd5e1','#d97706'][i]:'var(--muted)'};font-size:1.05rem">${u[scoreKey].toLocaleString()}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ================= HISTORY ================= */
+async function renderHistory(){
+  const days90=lastNDays(90), days30=lastNDays(30), days7=lastNDays(7);
+  const streak=calcStreak();
+  const best=Object.values(xpHistory).length? Math.max(0,...Object.values(xpHistory)):0;
+  const weekXP=days7.reduce((s,d)=>s+(xpHistory[d]||0),0);
+  const total=getTotalXP();
+  document.getElementById('hist-streak').textContent=streak;
+  document.getElementById('hist-best').textContent=best;
+  document.getElementById('hist-week').textContent=weekXP;
+  document.getElementById('hist-total').textContent=total;
+  renderHeatmap(days90);
+  // study hours
+  const studyHours7=days7.map(d=>{
+    const coins=coinsHistory[d]||0;
+    return Math.round((coins/10)*10)/10;
+  });
+  const totalStudyHours=studyHours7.reduce((s,h)=>s+h,0);
+  const avgStudyHours=totalStudyHours/7;
+  document.getElementById('study-hours-week').textContent=totalStudyHours.toFixed(1)+'h';
+  document.getElementById('study-hours-avg').textContent=avgStudyHours.toFixed(1)+'h';
+  if(studyTimeChart) studyTimeChart.destroy();
+  const stCtx=document.getElementById('study-time-chart').getContext('2d');
+  studyTimeChart=new Chart(stCtx,{
+    type:'bar',
+    data:{labels:days7.map(d=> new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'short'})), datasets:[{label:'ঘণ্টা', data:studyHours7, backgroundColor:days7.map((_,i)=> i===6?'#00e5a0':'#7c6af766'), borderRadius:8, borderSkipped:false}]},
+    options:{responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#8b8ba0'}, grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'#8b8ba0', callback:v=>v+'h'}, grid:{color:'rgba(255,255,255,0.04)'}, beginAtZero:true}}}
+  });
+  if(histWeeklyChart) histWeeklyChart.destroy();
+  const wCtx=document.getElementById('hist-weekly-chart').getContext('2d');
+  histWeeklyChart=new Chart(wCtx,{
+    type:'bar',
+    data:{labels:days7.map(d=> new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',day:'numeric'})), datasets:[{label:'তোমার XP', data:days7.map(d=>xpHistory[d]||0), backgroundColor:days7.map((_,i)=> i===6?'#00e5a0':'#7c6af766'), borderRadius:8, borderSkipped:false}]},
+    options:{responsive:true, plugins:{legend:{display:false}, title:{display:true, text:'সাপ্তাহিক XP', color:'#f0f0f5', font:{size:12}}}, scales:{x:{ticks:{color:'#8b8ba0'}, grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'#8b8ba0'}, grid:{color:'rgba(255,255,255,0.04)'}, beginAtZero:true}}}
+  });
+  if(histMonthlyChart) histMonthlyChart.destroy();
+  const mCtx=document.getElementById('hist-monthly-chart').getContext('2d');
+  histMonthlyChart=new Chart(mCtx,{
+    type:'line',
+    data:{labels:days30.map((d,i)=> i%5===0? new Date(d+'T00:00:00').getDate()+'' : ''), datasets:[{label:'দৈনিক XP', data:days30.map(d=>xpHistory[d]||0), borderColor:'#00e5a0', backgroundColor:'rgba(0,229,160,0.08)', fill:true, tension:.4, pointRadius:2, borderWidth:2}]},
+    options:{responsive:true, plugins:{legend:{display:false}, title:{display:true, text:'মাসিক XP (৩০ দিন)', color:'#f0f0f5', font:{size:12}}}, scales:{x:{ticks:{color:'#8b8ba0'}, grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'#8b8ba0'}, grid:{color:'rgba(255,255,255,0.04)'}, beginAtZero:true}}}
+  });
+  await loadCompareUsers();
+}
+async function loadCompareUsers(){
+  const listEl=document.getElementById('compare-user-list');
+  if(!compareAllLogs){
+    listEl.innerHTML='<div style="color:var(--muted);font-size:.8rem">লোড হচ্ছে…</div>';
+    try{ compareAllLogs=await dbGetAllLogs(); }catch(e){ listEl.innerHTML='<div style="color:var(--danger);font-size:.8rem">লোড ব্যর্থ</div>'; return; }
+  }
+  const users={};
+  compareAllLogs.forEach(l=>{
+    if(l.username===currentUser.username.toLowerCase()) return;
+    if(!users[l.username]) users[l.username]={};
+    users[l.username][l.date]=l.xp||0;
+  });
+  const userList=Object.keys(users);
+  if(!userList.length){ listEl.innerHTML='<div style="color:var(--muted);font-size:.8rem">এখনো কোনো অন্য ব্যবহারকারী নেই</div>'; return; }
+  const COMPARE_COLORS=['#7c6af7','#f7a06a','#ec4899','#00e5a0'];
+  listEl.innerHTML=userList.map(u=>{
+    const sel=compareSelected.includes(u);
+    return `<div class="compare-chip ${sel?'selected':''}" onclick="toggleCompareUser('${u}')" data-user="${u}"><div class="compare-dot" style="background:${sel?COMPARE_COLORS[compareSelected.indexOf(u)]:'var(--muted)'}"></div>${u}</div>`;
+  }).join('');
+  renderCompareChart(users);
+}
+window.toggleCompareUser=function(username){
+  if(compareSelected.includes(username)) compareSelected=compareSelected.filter(u=>u!==username);
+  else { if(compareSelected.length>=2){ showToast('সর্বোচ্চ ২ জন'); return; } compareSelected.push(username); }
+  const users={};
+  (compareAllLogs||[]).forEach(l=>{
+    if(l.username===currentUser.username.toLowerCase()) return;
+    if(!users[l.username]) users[l.username]={};
+    users[l.username][l.date]=l.xp||0;
+  });
+  document.querySelectorAll('.compare-chip').forEach(chip=>{
+    const u=chip.dataset.user;
+    const sel=compareSelected.includes(u);
+    chip.classList.toggle('selected',sel);
+    chip.querySelector('.compare-dot').style.background= sel? ['#7c6af7','#f7a06a'][compareSelected.indexOf(u)] : 'var(--muted)';
+  });
+  renderCompareChart(users);
+}
+function renderCompareChart(users){
+  const days30=lastNDays(30);
+  const chartWrap=document.getElementById('compare-chart-wrap');
+  const emptyEl=document.getElementById('compare-empty');
+  const tableEl=document.getElementById('compare-table');
+  if(!compareSelected.length){ chartWrap.style.display='none'; emptyEl.style.display='block'; return; }
+  chartWrap.style.display='block'; emptyEl.style.display='none';
+  const meData=days30.map(d=>xpHistory[d]||0);
+  const COMPARE_COLORS=['#7c6af7','#f7a06a'];
+  const datasets=[
+    {label:'তুমি', data:meData, borderColor:'#00e5a0', backgroundColor:'rgba(0,229,160,0.08)', fill:true, tension:.4, pointRadius:2, borderWidth:2},
+    ...compareSelected.map((u,i)=>({label:u, data:days30.map(d=>(users[u]||{})[d]||0), borderColor:COMPARE_COLORS[i], backgroundColor:COMPARE_COLORS[i]+'18', fill:false, tension:.4, pointRadius:2, borderWidth:2}))
+  ];
+  if(compareChart) compareChart.destroy();
+  const ctx=document.getElementById('compare-chart').getContext('2d');
+  compareChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:days30.map((d,i)=> i%5===0? new Date(d+'T00:00:00').getDate()+'' : ''), datasets},
+    options:{responsive:true, plugins:{legend:{display:true, labels:{color:'#f0f0f5', font:{size:11}, boxWidth:12}}, title:{display:true, text:'গত ৩০ দিনের তুলনা', color:'#f0f0f5', font:{size:12}}}, scales:{x:{ticks:{color:'#8b8ba0'}, grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'#8b8ba0'}, grid:{color:'rgba(255,255,255,0.04)'}, beginAtZero:true}}}
+  });
+  const days7=lastNDays(7);
+  const allUsers=['তুমি',...compareSelected];
+  const allData=[xpHistory,...compareSelected.map(u=>users[u]||{})];
+  const colors=['#00e5a0',...COMPARE_COLORS];
+  tableEl.innerHTML=allUsers.map((label,i)=>{
+    const hist=allData[i];
+    const wk=days7.reduce((s,d)=>s+(hist[d]||0),0);
+    const tot=Object.values(hist).reduce((s,v)=>s+v,0);
+    return `<div style="display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:8px;align-items:center;padding:9px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(255,255,255,0.06)">
+      <div style="width:10px;height:10px;border-radius:50%;background:${colors[i]}"></div>
+      <div style="font-weight:800;font-size:.82rem">${label}</div>
+      <div style="text-align:center"><div style="font-size:.62rem;color:var(--muted)">সপ্তাহ</div><div style="font-weight:900;color:${colors[i]}">${wk}</div></div>
+      <div style="text-align:center"><div style="font-size:.62rem;color:var(--muted)">মোট</div><div style="font-weight:900;color:${colors[i]}">${tot}</div></div>
+    </div>`;
+  }).join('');
+}
+function calcStreak(){
+  let streak=0, d=new Date();
+  for(let i=0;i<365;i++){
+    const k=localDateKey(d);
+    if((xpHistory[k]||0)>0) streak++;
+    else if(i>0) break;
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+function renderHeatmap(days){
+  const maxXP=Math.max(1,...days.map(d=>xpHistory[d]||0));
+  const cont=document.getElementById('heatmap-container');
+  const grid=document.createElement('div'); grid.className='heatmap-grid';
+  let col=null;
+  days.forEach((d,i)=>{
+    if(i%7===0){ col=document.createElement('div'); col.className='heatmap-col'; grid.appendChild(col); }
+    const xp=xpHistory[d]||0;
+    const level=xp===0?0: xp<maxXP*.25?1: xp<maxXP*.5?2: xp<maxXP*.75?3:4;
+    const cell=document.createElement('div');
+    cell.className='heatmap-cell'; if(level) cell.dataset.level=level;
+    cell.title=`${d}: ${xp} XP`;
+    col.appendChild(cell);
+  });
+  cont.innerHTML=''; cont.appendChild(grid);
+}
+
+/* ================= SHOP ================= */
+const SHOP_THEMES=[
+  {id:'theme_default', name:'ডিফল্ট', price:0, preview:'linear-gradient(135deg,#0c0c10,#13131a)', vars:{'--bg':'#060608','--surface':'#0f0f12','--card':'#16161c','--accent':'#00e5a0','--accent2':'#7c6af7','--accent3':'#f7a06a'}},
+  {id:'theme_ocean', name:'মহাসাগর', price:80, preview:'linear-gradient(135deg,#040f1e,#071e3d)', vars:{'--bg':'#040f1e','--surface':'#071e3d','--card':'#0b2a52','--accent':'#38bdf8','--accent2':'#6366f1','--accent3':'#34d399'}},
+  {id:'theme_sunset', name:'সূর্যাস্ত', price:80, preview:'linear-gradient(135deg,#18080a,#2d1018)', vars:{'--bg':'#18080a','--surface':'#2d1018','--card':'#3d1620','--accent':'#fb7185','--accent2':'#f97316','--accent3':'#fbbf24'}},
+  {id:'theme_galaxy', name:'গ্যালাক্সি', price:120, preview:'linear-gradient(135deg,#080616,#110c2e)', vars:{'--bg':'#080616','--surface':'#110c2e','--card':'#1a1244','--accent':'#a78bfa','--accent2':'#e879f9','--accent3':'#67e8f9'}},
+  {id:'theme_forest', name:'বন', price:80, preview:'linear-gradient(135deg,#051a0c,#0a2e18)', vars:{'--bg':'#051a0c','--surface':'#0a2e18','--card':'#0f3d22','--accent':'#4ade80','--accent2':'#a3e635','--accent3':'#fde68a'}},
+  {id:'theme_cherry', name:'চেরি', price:120, preview:'linear-gradient(135deg,#1a0814,#2e0f22)', vars:{'--bg':'#1a0814','--surface':'#2e0f22','--card':'#3d1430','--accent':'#f472b6','--accent2':'#e879f9','--accent3':'#fb7185'}},
+  {id:'theme_aurora', name:'অরোরা ⭐', price:400, preview:'linear-gradient(135deg,#091520,#101830,#091e1e)', vars:{'--bg':'#091520','--surface':'#101830','--card':'#162240','--accent':'#2dd4bf','--accent2':'#a78bfa','--accent3':'#38bdf8'}},
+  {id:'theme_neon', name:'নিয়ন ⭐⭐', price:450, preview:'linear-gradient(135deg,#0d0d1a,#12101e,#0d1a1a)', vars:{'--bg':'#0d0d1a','--surface':'#12101e','--card':'#1a1830','--accent':'#e879f9','--accent2':'#22d3ee','--accent3':'#facc15'}},
+];
+let myPurchases=[], activeThemeId='theme_default';
+async function dbGetPurchases(username){
+  const {data}=await sb.from('purchases').select('*').eq('username', username.toLowerCase());
+  return data||[];
+}
+async function dbAddPurchase(username,itemId,expiresAt){
+  const {data,error}=await sb.from('purchases').insert({username:username.toLowerCase(),item_id:itemId,purchased_at:new Date().toISOString(),expires_at:expiresAt}).select().single();
+  if(error) throw error; return data;
+}
+async function dbSetActiveTheme(username,themeId){
+  await sb.from('purchases').delete().eq('username',username.toLowerCase()).eq('item_id','active_theme');
+  await sb.from('purchases').insert({username:username.toLowerCase(),item_id:'active_theme',purchased_at:new Date().toISOString(),expires_at:themeId});
+}
+function applyTheme(themeId){
+  const theme=SHOP_THEMES.find(t=>t.id===themeId)||SHOP_THEMES[0];
+  Object.entries(theme.vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v));
+  activeThemeId=themeId;
+}
+function renderShop(){
+  const coins=getTotalCoins();
+  document.getElementById('shop-balance').textContent=`🟡 ${coins}`;
+  const now=Date.now();
+  const ownedThemeIds=new Set(['theme_default']);
+  myPurchases.filter(p=>p.item_id.startsWith('theme_')).forEach(p=>{
+    if(!p.expires_at || new Date(p.expires_at).getTime()>now) ownedThemeIds.add(p.item_id);
+  });
+  document.getElementById('shop-themes').innerHTML=SHOP_THEMES.map(t=>{
+    const owned=ownedThemeIds.has(t.id);
+    const active=t.id===activeThemeId;
+    const canBuy=coins>=t.price && !owned;
+    let statusHtml='';
+    if(active) statusHtml=`<div style="font-size:.68rem;color:var(--accent2);font-weight:800">✓ চালু আছে</div>`;
+    else if(owned) statusHtml=`<button class="btn btn-ghost btn-xs btn-full" onclick="activateTheme('${t.id}')">চালু করো</button>`;
+    else statusHtml=`<button class="btn ${canBuy?'btn-accent':'btn-ghost'} btn-xs btn-full" ${canBuy?'':'disabled'} onclick="buyTheme('${t.id}',${t.price})"><span>🟡 ${t.price}</span></button>`;
+    return `<div class="shop-item ${owned?'owned':''} ${active?'active-theme':''}">
+      <div class="shop-preview" style="background:${t.preview}"></div>
+      <div style="font-weight:800;font-size:.88rem">${t.name}</div>
+      ${statusHtml}
+    </div>`;
+  }).join('');
+}
+window.buyTheme=async function(themeId,price){
+  if(getTotalCoins()<price){ showToast('পর্যাপ্ত কয়েন নেই'); return; }
+  try{
+    showSync('busy','⏳...');
+    await dbAddPurchase(currentUser.username, themeId, null);
+    myPurchases=await dbGetPurchases(currentUser.username);
+    await dbUpdateCoins(currentUser.id, getTotalCoins());
+    activateTheme(themeId);
+    renderShop(); updateSidebar(); updateStats();
+    showSync('ok','✓'); showToast(`${SHOP_THEMES.find(t=>t.id===themeId)?.name} কেনা হয়েছে! ✓`);
+  }catch(e){ showSync('err','✗'); showToast('কেনা ব্যর্থ'); }
+}
+window.activateTheme=async function(themeId){
+  applyTheme(themeId);
+  try{ await dbSetActiveTheme(currentUser.username, themeId); }catch(e){}
+  renderShop(); showToast('থিম পরিবর্তন হয়েছে ✓');
+}
+
+/* ================= CUSTOM TIME ================= */
+window.openCustomTime=function(slotId,idx){
+  customTimeSlotId=slotId; customTimeSlotIdx=idx;
+  const slots=getTodaySlots();
+  const sl=slots[idx];
+  document.getElementById('custom-slot-name').textContent=sl.title;
+  document.getElementById('custom-hours').value=0;
+  document.getElementById('custom-minutes').value=30;
+  updateCustomXP();
+  openModal('modal-custom-time');
+}
+window.closeCustomTime=function(){ closeModal('modal-custom-time'); customTimeSlotId=null; customTimeSlotIdx=null; }
+window.updateCustomXP=function(){
+  const hours=parseInt(document.getElementById('custom-hours').value)||0;
+  const mins=parseInt(document.getElementById('custom-minutes').value)||0;
+  const totalMinutes=(hours*60)+mins;
+  const xp=Math.round(totalMinutes*(100/60));
+  const coins=(totalMinutes*(10/60)).toFixed(1);
+  document.getElementById('custom-xp-preview').textContent=`+${xp}`;
+  document.getElementById('custom-coin-preview').textContent=`+${coins}`;
+}
+window.confirmCustomTime=function(){
+  if(!customTimeSlotId || customTimeSlotIdx===null) return;
+  const hours=parseInt(document.getElementById('custom-hours').value)||0;
+  const mins=parseInt(document.getElementById('custom-minutes').value)||0;
+  const totalMinutes=(hours*60)+mins;
+  if(totalMinutes<1){ showToast('সময় দাও'); return; }
+  const slots=getTodaySlots();
+  const sl=slots[customTimeSlotIdx];
+  const xp=Math.round(totalMinutes*(100/60));
+  const coins=Math.round(totalMinutes*(10/60)*10)/10;
+  completedSlots[sl.id]={custom:true, minutes:totalMinutes, xp, coins};
+  const today=todayKey();
+  xpHistory[today]=(xpHistory[today]||0)+xp;
+  coinsHistory[today]=(coinsHistory[today]||0)+coins;
+  spawnXPPop(xp, sl.id);
+  updateStats(); renderTimeline(); renderWeeklyGrid(); scheduleSave();
+  closeCustomTime();
+  const timeStr= hours>0? `${hours}ঘণ্টা ${mins}মিনিট` : `${mins} মিনিট`;
+  showToast(`✓ ${timeStr} সম্পন্ন! +${xp} XP, +${coins} 🟡`);
+}
+
+/* ================= TODAY TOPIC ================= */
+let topicSaveTimer=null;
+window.saveTodayTopic=function(sourceId){
+  clearTimeout(topicSaveTimer);
+  topicSaveTimer=setTimeout(()=>{
+    const sourceInput=document.getElementById(sourceId);
+    if(!sourceInput) return;
+    todayTopic=sourceInput.value.trim();
+    const otherId= sourceId==='today-topic-input' ? 'today-topic-input-desktop' : 'today-topic-input';
+    const otherInput=document.getElementById(otherId);
+    if(otherInput) otherInput.value=todayTopic;
+    const key=`rx_topic_${todayKey()}_${currentUser?.username||'guest'}`;
+    localStorage.setItem(key, todayTopic);
+    dbSaveTodayTopic(currentUser?.username, todayKey(), todayTopic);
+  },500);
+}
+async function dbSaveTodayTopic(username,date,topic){
+  try{
+    await sb.from('user_meta').upsert({username:username?.toLowerCase(), key:`topic_${date}`, value:topic},{onConflict:'username,key'});
+  }catch(e){}
+}
+async function dbGetTodayTopic(username,date){
+  try{
+    const {data}=await sb.from('user_meta').select('value').eq('username', username?.toLowerCase()).eq('key',`topic_${date}`).single();
+    return data?.value||'';
+  }catch(e){ return ''; }
+}
+async function loadTodayTopic(){
+  try{
+    const dbTopic=await dbGetTodayTopic(currentUser?.username, todayKey());
+    if(dbTopic){
+      todayTopic=dbTopic;
+      if(document.getElementById('today-topic-input')) document.getElementById('today-topic-input').value=dbTopic;
+      if(document.getElementById('today-topic-input-desktop')) document.getElementById('today-topic-input-desktop').value=dbTopic;
+      localStorage.setItem(`rx_topic_${todayKey()}_${currentUser?.username||'guest'}`, dbTopic);
+      return;
+    }
+  }catch(e){}
+  const key=`rx_topic_${todayKey()}_${currentUser?.username||'guest'}`;
+  const saved=localStorage.getItem(key)||'';
+  todayTopic=saved;
+  if(document.getElementById('today-topic-input')) document.getElementById('today-topic-input').value=saved;
+  if(document.getElementById('today-topic-input-desktop')) document.getElementById('today-topic-input-desktop').value=saved;
+}
+
+/* ================= POMODORO ================= */
+window.openPomodoro=function(){
+  const slots=getTodaySlots();
+  if(!slots.length) return;
+  const sl=slots[currentSlotIdx]||slots[0];
+  pomSlotIdx=slots.indexOf(sl);
+  document.getElementById('pomo-slot-name').textContent=sl.title;
+  document.getElementById('pomo-xp-hint').textContent=`${sl.xp||0} XP • ${sl.start} — ${sl.end}`;
+  pomSeconds=3000; pomRunning=false;
+  updatePomoDisplay();
+  document.getElementById('pomo-btn').textContent='শুরু';
+  openModal('modal-pomo');
+}
+window.closePomo=function(){
+  closeModal('modal-pomo');
+  if(pomInterval) clearInterval(pomInterval);
+  pomInterval=null; pomRunning=false;
+}
+window.togglePomo=function(){
+  const btn=document.getElementById('pomo-btn');
+  if(pomRunning){
+    clearInterval(pomInterval); pomRunning=false; btn.textContent='শুরু';
+  } else {
+    pomRunning=true; btn.textContent='পজ';
+    pomInterval=setInterval(()=>{
+      pomSeconds--;
+      updatePomoDisplay();
+      if(pomSeconds<=0){
+        clearInterval(pomInterval); pomRunning=false;
+        btn.textContent='শেষ ✓';
+        showToast('🎉 ফোকাস সেশন শেষ!');
+        // auto complete slot
+        const slots=getTodaySlots();
+        const sl=slots[pomSlotIdx];
+        if(sl && !completedSlots[sl.id]){
+          completedSlots[sl.id]=true;
+          recalcToday(); updateStats(); renderTimeline(); renderWeeklyGrid(); scheduleSave();
+          spawnXPPop(sl.xp||0, sl.id);
+        }
+      }
+    },1000);
+  }
+}
+function updatePomoDisplay(){
+  const m=Math.floor(pomSeconds/60), s=pomSeconds%60;
+  document.getElementById('pomo-timer-display').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+window.speakCurrent=function(){
+  const slots=getTodaySlots();
+  if(!slots[currentSlotIdx]) return;
+  const sl=slots[currentSlotIdx];
+  if('speechSynthesis' in window){
+    const utter=new SpeechSynthesisUtterance(`${sl.title}. ${sl.start} থেকে ${sl.end}`);
+    utter.lang='bn-BD'; speechSynthesis.speak(utter);
+  }
+}
+
+/* ================= USER PROFILE (clean) ================= */
+window.openUserProfile=async function(username){
+  document.getElementById('up-avatar').textContent=username.charAt(0).toUpperCase();
+  document.getElementById('up-username').textContent=username;
+  document.getElementById('up-xp').textContent='...';
+  document.getElementById('up-topic').textContent='—';
+  document.getElementById('up-slots').innerHTML='<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:20px">লোড হচ্ছে…</div>';
+  const tab=currentLBTab;
+  const periodLabel= tab==='today'?'আজ': tab==='weekly'?'সাপ্তাহিক':'সর্বকালীন';
+  document.getElementById('up-period-label').textContent=periodLabel;
+  document.getElementById('up-period-label-2').textContent=periodLabel;
+  openModal('modal-user-profile');
+  try{
+    const {data: allUserLogs}=await sb.from('daily_logs').select('date,xp,completed_slots').eq('username', username.toLowerCase());
+    const logs=allUserLogs||[];
+    const today=todayKey();
+    const days7=new Set(lastNDays(7));
+    let xp=0;
+    logs.forEach(l=>{
+      const isToday=l.date===today;
+      const isWeek=days7.has(l.date);
+      const include= tab==='all' || (tab==='today'&&isToday) || (tab==='weekly'&&isWeek);
+      if(!include) return;
+      xp+=l.xp||0;
+    });
+    document.getElementById('up-xp').textContent=`${xp.toLocaleString()} XP`;
+    const topic=await dbGetTodayTopic(username, todayKey());
+    document.getElementById('up-topic').textContent= topic||'কিছু লেখা নেই';
+    const {data: routineData}=await sb.from('routines').select('*').eq('username', username.toLowerCase()).eq('is_active',true).single();
+    if(!routineData?.slots?.length && !routineData?.weekly_slots){
+      document.getElementById('up-slots').innerHTML='<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:12px">কোনো রুটিন নেই</div>';
+      return;
+    }
+    // normalize routine
+    const r=normalizeRoutine(routineData);
+    const todayLog=logs.find(l=>l.date===todayKey());
+    const completedToday=todayLog?.completed_slots||{};
+    let displaySlots=[];
+    if(r.type==='weekly'){
+      const key=getTodayWeekdayKey();
+      displaySlots=r.weeklySlots[key]||[];
+    } else displaySlots=r.slots||[];
+    if(!displaySlots.length){
+      document.getElementById('up-slots').innerHTML='<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:12px">আজ কোনো স্লট নেই</div>';
+      return;
+    }
+    document.getElementById('up-slots').innerHTML=displaySlots.map(sl=>{
+      const done=completedToday[sl.id];
+      const col=CAT_COLORS[sl.category]||CAT_COLORS.other;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid ${done?'rgba(0,229,160,0.22)':'rgba(255,255,255,0.06)'}">
+        <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid ${done?'var(--accent)':col};background:${done?'var(--accent)':'transparent'};display:grid;place-items:center;flex-shrink:0">${done?'<i class="fa-solid fa-check" style="font-size:.55rem;color:#000"></i>':''}</div>
+        <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.82rem">${sl.title}</div><div style="font-size:.68rem;color:var(--muted)">${sl.start} — ${sl.end}</div></div>
+        <span style="font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:999px;background:${col}18;color:${col}">${sl.category}</span>
+      </div>`;
+    }).join('');
+  }catch(e){
+    document.getElementById('up-slots').innerHTML='<div style="color:var(--danger);font-size:.8rem;text-align:center;padding:12px">লোড ব্যর্থ</div>';
+  }
+}
+window.closeUserProfile=function(){ closeModal('modal-user-profile'); }
+
+/* ================= MODAL HELPERS ================= */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+/* ================= SYNC & TOAST ================= */
+let syncHideT=null;
+function showSync(state,text){
+  const el=document.getElementById('sync-badge');
+  el.className='sync-'+state; el.textContent=text; el.style.display='block';
+  clearTimeout(syncHideT);
+  if(state==='ok') syncHideT=setTimeout(()=> el.style.display='none',3000);
+}
+let toastT=null;
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.display='block';
+  clearTimeout(toastT); toastT=setTimeout(()=> el.style.display='none',2800);
+}
+window.showToast=showToast;
+
+/* ================= INIT ================= */
+(async function init(){
+  const saved=localStorage.getItem('rx_sess');
+  if(saved){
+    try{
+      const sess=JSON.parse(saved);
+      document.getElementById('loading-screen').style.display='flex';
+      const user=await dbGetUser(sess.username);
+      if(user){ await bootApp(user); return; }
+    }catch(e){}
+    localStorage.removeItem('rx_sess');
+  }
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  try{ startClock(); }catch(e){}
+})();
+function closeOnboarding(){ document.getElementById('onboarding').style.display='none'; }
+window.closeOnboarding=closeOnboarding;
 </script>
-
-<div id="playerToast"
-     style="position: fixed; bottom: 10%; left: 50%; transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.8); color: white;
-            padding: 10px 20px; border-radius: 8px;
-            font-size: 16px; opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease;">
-
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3ded0a41aedaab8',t:'MTc4OTg4NjE3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
-
