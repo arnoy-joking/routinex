@@ -1,0 +1,58 @@
+{
+  "name": "RoutineX • Life OS — Premium",
+  "short_name": "RoutineX",
+  "description": "Life OS — Premium. Build the day. Own the year. Daily & Weekly routines, offline-ready.",
+  "start_url": "./routine.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "background_color": "#060608",
+  "theme_color": "#060608",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "lifestyle", "education"],
+  "icons": [
+    {
+      "src": "icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today",
+      "url": "./routine.html",
+      "description": "Open today's routine"
+    },
+    {
+      "name": "Weekly",
+      "url": "./routine.html#week",
+      "description": "Open weekly view"
+    }
+  ],
+  "screenshots": []
+}

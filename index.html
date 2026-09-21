@@ -1,11 +1,17 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RoutineX • Life OS — Premium</title>
-<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/14991/14991808.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#060608">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RoutineX">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -2314,7 +2320,7 @@ window.importJSONRoutine = async function(){
         start: sl.start || '07:00 AM',
         end: sl.end || '08:00 AM',
         category: CAT_COLORS[sl.category] ? sl.category : 'other',
-        xp: Number.isFinite(+sl.xp) ? Math.min(Math.max(0, +sl.xp), 120) : 25
+        xp: Number.isFinite(+sl.xp) ? Math.min(Math.max(0, +sl.xp), 5000) : 25
       }));
     }
     payload = { id:null, name:(parsed.routine_name||'Weekly Routine').slice(0,60), type:'weekly', slots:[], weeklySlots, is_active:true };
@@ -2326,7 +2332,7 @@ window.importJSONRoutine = async function(){
       start: sl.start || '07:00 AM',
       end: sl.end || '08:00 AM',
       category: CAT_COLORS[sl.category] ? sl.category : 'other',
-      xp: Number.isFinite(+sl.xp) ? Math.min(Math.max(0,+sl.xp),120) : 25
+      xp: Number.isFinite(+sl.xp) ? Math.min(Math.max(0,+sl.xp),5000) : 25
     }));
     payload = { id:null, name:(parsed.routine_name||'AI Routine').slice(0,60), type:'daily', slots, weeklySlots:{sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]}, is_active:true };
   }
@@ -2995,5 +3001,13 @@ window.showToast=showToast;
 function closeOnboarding(){ document.getElementById('onboarding').style.display='none'; }
 window.closeOnboarding=closeOnboarding;
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3ded0a41aedaab8',t:'MTc4OTg4NjE3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>
+// PWA — cache only shell (offline-ready, Supabase stays network-only)
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').then(r=> console.log('[PWA] shell cached:', r.scope)).catch(e=> console.warn('[PWA]', e.message));
+  });
+}
+</script>
+</body>
 </html>
