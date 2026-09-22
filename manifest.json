@@ -2,7 +2,7 @@
   "name": "RoutineX • Life OS — Premium",
   "short_name": "RoutineX",
   "description": "Life OS — Premium. Build the day. Own the year. Daily & Weekly routines, offline-ready.",
-  "start_url": "./routine.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "browser"],
@@ -45,12 +45,12 @@
   "shortcuts": [
     {
       "name": "Today",
-      "url": "./routine.html",
+      "url": "./index.html",
       "description": "Open today's routine"
     },
     {
       "name": "Weekly",
-      "url": "./routine.html#week",
+      "url": "./index.html#week",
       "description": "Open weekly view"
     }
   ],
