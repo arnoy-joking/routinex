@@ -400,16 +400,51 @@ select.inp{cursor:pointer}
 .shop-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; contain:layout}
 @media(min-width:600px){.shop-grid{grid-template-columns:repeat(3,1fr)}}
 .shop-item{
-  background:#1a1a20; border:1px solid rgba(255,255,255,0.06);
-  border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:10px;
-  transition:transform .14s ease, border-color .14s ease, background .14s ease;
+  position:relative; overflow:hidden;
+  background:#1a1a20; border:1px solid rgba(255,255,255,0.08);
+  border-radius:18px; padding:0; display:flex; flex-direction:column; gap:0;
+  transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
   contain:layout paint;
   will-change:transform;
 }
-.shop-item:hover{border-color:rgba(255,255,255,0.12); transform:translateY(-2px) translateZ(0)}
-.shop-item.owned{border-color:rgba(0,229,160,0.35); background:rgba(0,229,160,0.06)}
-.shop-item.active-theme{border-color:rgba(124,106,247,0.45); background:rgba(124,106,247,0.08)}
-.shop-preview{height:44px; border-radius:10px; margin-bottom:2px; border:1px solid rgba(255,255,255,0.06)}
+.shop-item::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+  opacity:0; transition:opacity .18s;
+}
+.shop-item:hover{border-color:rgba(255,255,255,0.14); transform:translateY(-3px) translateZ(0); box-shadow:0 12px 28px rgba(0,0,0,0.35)}
+.shop-item:hover::before{opacity:1}
+.shop-item.rented{border-color:rgba(0,229,160,0.42); background:rgba(0,229,160,0.07); box-shadow:0 0 0 1px rgba(0,229,160,0.12) inset, 0 8px 20px rgba(0,229,160,0.08)}
+.shop-item.active-theme{border-color:rgba(124,106,247,0.55); background:linear-gradient(180deg, rgba(124,106,247,0.10) 0%, rgba(0,229,160,0.04) 100%); box-shadow:0 0 0 1px rgba(124,106,247,0.18) inset, 0 12px 32px rgba(124,106,247,0.14)}
+.shop-item.active-theme::after{
+  content:'✦ ACTIVE'; position:absolute; top:10px; right:10px; font-size:.58rem; font-weight:800; letter-spacing:.08em;
+  background:var(--text); color:#000; padding:3px 8px; border-radius:999px; box-shadow:0 2px 10px rgba(0,0,0,0.2);
+}
+.shop-preview{
+  height:98px; position:relative; overflow:hidden; margin:0;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  display:flex; flex-direction:column; justify-content:flex-end; padding:12px 12px 14px; gap:8px;
+}
+.shop-preview::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.18) 100%);
+  pointer-events:none; z-index:0;
+}
+.shop-preview-content{position:relative; z-index:1; display:flex; flex-direction:column; gap:8px; margin-top:22px}
+.shop-preview-mock{height:7px; border-radius:999px; background:rgba(255,255,255,0.88);}
+.shop-preview-mock2{height:6px; border-radius:999px; background:rgba(255,255,255,0.38); width:68%}
+.shop-preview-dot{width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); display:inline-block; flex-shrink:0}
+.shop-rent-badge{
+  position:absolute; top:10px; left:10px; z-index:2; font-size:.60rem; font-weight:800; letter-spacing:.07em;
+  background:rgba(0,0,0,0.62); color:#fff; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.14); padding:4px 9px; border-radius:999px; line-height:1;
+  box-shadow:0 2px 10px rgba(0,0,0,0.22);
+}
+.shop-rent-badge.rent-7{background:rgba(0,229,160,0.18); border-color:rgba(0,229,160,0.32); color:var(--accent); box-shadow:0 2px 10px rgba(0,229,160,0.18)}
+.shop-rent-badge.rent-14{background:rgba(124,106,247,0.20); border-color:rgba(124,106,247,0.34); color:var(--accent2); box-shadow:0 2px 10px rgba(124,106,247,0.18)}
+.shop-rent-badge.rent-30{background:linear-gradient(135deg, rgba(124,106,247,0.24), rgba(0,229,160,0.20)); border-color:rgba(124,106,247,0.36); color:#fff; box-shadow:0 4px 14px rgba(124,106,247,0.24)}
+.shop-rent-free{background:rgba(255,255,255,0.10) !important; border-color:rgba(255,255,255,0.14) !important; color:#fff !important}
+
 /* compare */
 .compare-chip{display:inline-flex; align-items:center; gap:6px; padding:6px 12px 6px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.08); background:#1a1a20; font-size:.78rem; font-weight:700; cursor:pointer; transition:background .14s ease, border-color .14s ease; will-change:transform}
 .compare-chip:hover{border-color:rgba(255,255,255,0.14); background:#22222a}
@@ -785,17 +820,17 @@ select.inp{cursor:pointer}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px">
       <div>
         <h2 class="section-title" style="margin:0">শপ 🛍️</h2>
-        <p style="color:var(--muted);font-size:.82rem;margin-top:4px">Study slots থেকে coins — প্রিমিয়াম থিম আনলক করো</p>
+        <p style="color:var(--muted);font-size:.82rem;margin-top:4px">Hard to earn • Fast expiry — <span style="color:var(--accent);font-weight:800">320 🟡 / 2d</span> • <span style="color:var(--accent2);font-weight:800">850 🟡 / 5d</span> • <span style="color:#e879f9;font-weight:800">2200 🟡 / 7d MYTHIC</span> — grind or lose it</p>
       </div>
       <div id="shop-balance" class="coin-display" style="font-size:.88rem">🟡 0</div>
     </div>
     <div style="height:1px;background:linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent);margin:16px 0"></div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;color:var(--muted);text-transform:uppercase">🎨 প্রিমিয়াম থিম</div>
-      <span class="badge badge-gold" style="font-size:.62rem">PREMIUM</span>
+      <div style="font-size:.72rem;font-weight:800;letter-spacing:.08em;color:var(--muted);text-transform:uppercase">🎨 ভাড়া থিম — সবগুলো rent only</div>
+      <span class="badge" style="font-size:.62rem;background:rgba(0,229,160,0.12);color:var(--accent);border-color:rgba(0,229,160,0.22)">RENT ONLY</span>
     </div>
     <div class="shop-grid" id="shop-themes" style="margin-bottom:10px"></div>
-    <p style="text-align:center;font-size:.7rem;color:var(--muted2);margin-top:8px">আরও থিম শীঘ্রই আসছে ✨ — শুধু প্রিমিয়াম ডিজাইন</p>
+    <p style="text-align:center;font-size:.7rem;color:var(--muted2);margin-top:10px">💎 Grind hard — these themes expire fast. Premium flex only for the dedicated.</p>
   </div>
 
 </div><!-- /main -->
@@ -1423,7 +1458,18 @@ async function bootApp(user){
     // load purchases (themes)
     try{ myPurchases=await dbGetPurchases(user.username); }catch(e){ myPurchases=[]; }
     const activeThemePurchase=myPurchases.find(p=>p.item_id==='active_theme');
-    if(activeThemePurchase?.expires_at) applyTheme(activeThemePurchase.expires_at);
+    if(activeThemePurchase?.expires_at){
+      const want=activeThemePurchase.expires_at;
+      // verify rent still valid if not default
+      if(want!=='theme_default'){
+        const hasRent=myPurchases.some(pp=>pp.item_id===want && pp.expires_at && new Date(pp.expires_at).getTime()>Date.now());
+        if(hasRent) applyTheme(want);
+        else {
+          applyTheme('theme_default');
+          try{ await dbSetActiveTheme(user.username, 'theme_default'); }catch(e){}
+        }
+      } else applyTheme(want);
+    }
 
     // load tasks
     try{
@@ -2689,14 +2735,14 @@ function renderHeatmap(days){
 
 /* ================= SHOP ================= */
 const SHOP_THEMES=[
-  {id:'theme_default', name:'ডিফল্ট', price:0, preview:'linear-gradient(135deg,#0c0c10,#13131a)', vars:{'--bg':'#060608','--surface':'#0f0f12','--card':'#16161c','--accent':'#00e5a0','--accent2':'#7c6af7','--accent3':'#f7a06a'}},
-  {id:'theme_ocean', name:'মহাসাগর', price:80, preview:'linear-gradient(135deg,#040f1e,#071e3d)', vars:{'--bg':'#040f1e','--surface':'#071e3d','--card':'#0b2a52','--accent':'#38bdf8','--accent2':'#6366f1','--accent3':'#34d399'}},
-  {id:'theme_sunset', name:'সূর্যাস্ত', price:80, preview:'linear-gradient(135deg,#18080a,#2d1018)', vars:{'--bg':'#18080a','--surface':'#2d1018','--card':'#3d1620','--accent':'#fb7185','--accent2':'#f97316','--accent3':'#fbbf24'}},
-  {id:'theme_galaxy', name:'গ্যালাক্সি', price:120, preview:'linear-gradient(135deg,#080616,#110c2e)', vars:{'--bg':'#080616','--surface':'#110c2e','--card':'#1a1244','--accent':'#a78bfa','--accent2':'#e879f9','--accent3':'#67e8f9'}},
-  {id:'theme_forest', name:'বন', price:80, preview:'linear-gradient(135deg,#051a0c,#0a2e18)', vars:{'--bg':'#051a0c','--surface':'#0a2e18','--card':'#0f3d22','--accent':'#4ade80','--accent2':'#a3e635','--accent3':'#fde68a'}},
-  {id:'theme_cherry', name:'চেরি', price:120, preview:'linear-gradient(135deg,#1a0814,#2e0f22)', vars:{'--bg':'#1a0814','--surface':'#2e0f22','--card':'#3d1430','--accent':'#f472b6','--accent2':'#e879f9','--accent3':'#fb7185'}},
-  {id:'theme_aurora', name:'অরোরা ⭐', price:400, preview:'linear-gradient(135deg,#091520,#101830,#091e1e)', vars:{'--bg':'#091520','--surface':'#101830','--card':'#162240','--accent':'#2dd4bf','--accent2':'#a78bfa','--accent3':'#38bdf8'}},
-  {id:'theme_neon', name:'নিয়ন ⭐⭐', price:450, preview:'linear-gradient(135deg,#0d0d1a,#12101e,#0d1a1a)', vars:{'--bg':'#0d0d1a','--surface':'#12101e','--card':'#1a1830','--accent':'#e879f9','--accent2':'#22d3ee','--accent3':'#facc15'}},
+  {id:'theme_default', name:'Obsidian', price:0, rentDays:0, preview:'linear-gradient(135deg,#0c0c10 0%, #16161c 50%, #1e1e28 100%)', vars:{'--bg':'#060608','--surface':'#0f0f12','--card':'#16161c','--accent':'#00e5a0','--accent2':'#7c6af7','--accent3':'#f7a06a'}, badge:'FREE • Permanent'},
+  {id:'theme_inferno', name:'Inferno Core', price:320, rentDays:2, preview:'linear-gradient(135deg,#0f0404 0%, #1a0808 30%, #2a0f0f 60%, #4a1515 100%)', vars:{'--bg':'#0f0404','--surface':'#1a0808','--card':'#2a1212','--accent':'#ff3b30','--accent2':'#ff6b35','--accent3':'#ffcc02'}, badge:'2 DAYS'},
+  {id:'theme_abyss', name:'Abyss Protocol', price:380, rentDays:3, preview:'linear-gradient(135deg,#020814 0%, #040d1f 35%, #071a3a 65%, #0a2a5a 100%)', vars:{'--bg':'#020814','--surface':'#040d1f','--card':'#0a1a3a','--accent':'#0ea5e9','--accent2':'#6366f1','--accent3':'#38bdf8'}, badge:'3 DAYS'},
+  {id:'theme_frost', name:'Frostbyte', price:650, rentDays:3, preview:'linear-gradient(135deg,#021418 0%, #042029 35%, #083040 65%, #0d4a5a 100%)', vars:{'--bg':'#021418','--surface':'#042029','--card':'#083040','--accent':'#22d3ee','--accent2':'#2dd4bf','--accent3':'#67e8f9'}, badge:'3 DAYS'},
+  {id:'theme_nebula', name:'Nebula Drift', price:850, rentDays:5, preview:'linear-gradient(135deg,#080512 0%, #0f0a1f 35%, #1a103e 65%, #2a1050 100%)', vars:{'--bg':'#080512','--surface':'#0f0a1f','--card':'#1a103e','--accent':'#a78bfa','--accent2':'#ec4899','--accent3':'#8b5cf6'}, badge:'5 DAYS'},
+  {id:'theme_eclipse', name:'Eclipse Noir', price:950, rentDays:5, preview:'linear-gradient(135deg,#0a0a0a 0%, #141414 35%, #1f1a1a 65%, #2e1e1e 100%)', vars:{'--bg':'#0a0a0a','--surface':'#141414','--card':'#1f1a1a','--accent':'#f7a06a','--accent2':'#f43f5e','--accent3':'#fbbf24'}, badge:'5 DAYS'},
+  {id:'theme_aurora', name:'Aurora Prime', price:1600, rentDays:7, preview:'linear-gradient(135deg,#02141a 0%, #061e2a 30%, #0f2a3a 60%, #143a4a 85%, #1a4a5a 100%)', vars:{'--bg':'#02141a','--surface':'#061e2a','--card':'#0f2a3a','--accent':'#2dd4bf','--accent2':'#a78bfa','--accent3':'#60a5fa'}, badge:'7 DAYS • LEGEND'},
+  {id:'theme_neon', name:'Neon Genesis', price:2200, rentDays:7, preview:'linear-gradient(135deg,#060610 0%, #0a0a18 25%, #141428 50%, #1a1830 75%, #1e1e3a 100%)', vars:{'--bg':'#060610','--surface':'#0a0a18','--card':'#141428','--accent':'#e879f9','--accent2':'#22d3ee','--accent3':'#facc15'}, badge:'7 DAYS • MYTHIC'},
 ];
 let myPurchases=[], activeThemeId='theme_default';
 async function dbGetPurchases(username){
@@ -2715,46 +2761,149 @@ function applyTheme(themeId){
   const theme=SHOP_THEMES.find(t=>t.id===themeId)||SHOP_THEMES[0];
   Object.entries(theme.vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v));
   activeThemeId=themeId;
+  // add body class for active theme glow
+  document.body.dataset.theme=themeId;
 }
+function formatRentLeft(expiresAt){
+  const now=Date.now();
+  const exp=new Date(expiresAt).getTime();
+  const diff=exp-now;
+  if(diff<=0) return 'মেয়াদ শেষ';
+  const days=Math.floor(diff/86400000);
+  const hrs=Math.floor((diff%86400000)/3600000);
+  if(days>0) return `বাকি ${days} দিন` + (hrs>0? ` ${hrs} ঘণ্টা`:'');
+  if(hrs>0) return `বাকি ${hrs} ঘণ্টা`;
+  const mins=Math.floor(diff/60000);
+  return `বাকি ${mins} মিনিট`;
+}
+// auto expiry checker — every 60s revert expired theme
+setInterval(()=>{
+  if(activeThemeId!=='theme_default'){
+    const stillRented=myPurchases.some(p=>p.item_id===activeThemeId && p.expires_at && new Date(p.expires_at).getTime()>Date.now());
+    if(!stillRented){
+      applyTheme('theme_default');
+      try{ dbSetActiveTheme(currentUser?.username, 'theme_default'); }catch(e){}
+      if(document.getElementById('view-shop')?.classList.contains('active')) renderShop();
+      showToast('⏳ ভাড়া শেষ — ডিফল্টে ফেরা হয়েছে');
+    }
+  }
+}, 60000);
+
 function renderShop(){
   const coins=getTotalCoins();
-  document.getElementById('shop-balance').textContent=`🟡 ${coins}`;
+  const balEl=document.getElementById('shop-balance');
+  if(balEl) balEl.textContent=`🟡 ${coins}`;
   const now=Date.now();
-  const ownedThemeIds=new Set(['theme_default']);
+  // map themeId -> latest expiry
+  const rentMap=new Map();
   myPurchases.filter(p=>p.item_id.startsWith('theme_')).forEach(p=>{
-    if(!p.expires_at || new Date(p.expires_at).getTime()>now) ownedThemeIds.add(p.item_id);
+    if(p.expires_at){
+      const exp=new Date(p.expires_at).getTime();
+      if(exp>now){
+        const cur=rentMap.get(p.item_id);
+        if(!cur || exp>new Date(cur).getTime()) rentMap.set(p.item_id, p.expires_at);
+      }
+    }
   });
-  document.getElementById('shop-themes').innerHTML=SHOP_THEMES.map(t=>{
-    const owned=ownedThemeIds.has(t.id);
+  const ownedThemeIds=new Set(['theme_default']);
+  rentMap.forEach((exp,id)=> ownedThemeIds.add(id));
+
+  // auto-revert if active theme expired
+  if(activeThemeId!=='theme_default' && !ownedThemeIds.has(activeThemeId)){
+    applyTheme('theme_default');
+    try{ dbSetActiveTheme(currentUser.username, 'theme_default'); }catch(e){}
+  }
+
+  const container=document.getElementById('shop-themes');
+  if(!container) return;
+  container.innerHTML=SHOP_THEMES.map(t=>{
+    const isDefault=t.id==='theme_default';
+    const rented=isDefault ? true : rentMap.has(t.id);
     const active=t.id===activeThemeId;
-    const canBuy=coins>=t.price && !owned;
-    let statusHtml='';
-    if(active) statusHtml=`<div style="font-size:.68rem;color:var(--accent2);font-weight:800">✓ চালু আছে</div>`;
-    else if(owned) statusHtml=`<button class="btn btn-ghost btn-xs btn-full" onclick="activateTheme('${t.id}')">চালু করো</button>`;
-    else statusHtml=`<button class="btn ${canBuy?'btn-accent':'btn-ghost'} btn-xs btn-full" ${canBuy?'':'disabled'} onclick="buyTheme('${t.id}',${t.price})"><span>🟡 ${t.price}</span></button>`;
-    return `<div class="shop-item ${owned?'owned':''} ${active?'active-theme':''}">
-      <div class="shop-preview" style="background:${t.preview}"></div>
-      <div style="font-weight:800;font-size:.88rem">${t.name}</div>
-      ${statusHtml}
+    const expiry=rentMap.get(t.id);
+    const canRent=coins>=t.price && !rented;
+    const rentLabel = isDefault ? 'স্থায়ী' : `${t.badge} • ${t.price} 🟡`;
+    const timeLeft = rented && expiry ? formatRentLeft(expiry) : '';
+    // badge color by duration
+    const badgeCls = t.rentDays>=30?'rent-30': t.rentDays>=14?'rent-14':'rent-7';
+    // preview inner mock colors based on theme vars
+    const accent=t.vars['--accent']||'#00e5a0';
+    const accent2=t.vars['--accent2']||'#7c6af7';
+
+    let actionHtml='';
+    if(active){
+      actionHtml=`<div style="display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:800;color:var(--accent)"><span style="width:14px;height:14px;border-radius:50%;background:var(--accent);display:grid;place-items:center;color:#000;font-size:.6rem">✓</span> চালু আছে ${!isDefault? `<span style="font-size:.62rem;color:var(--muted);font-weight:600">• ${timeLeft}</span>`:''}</div>`;
+    } else if(rented){
+      actionHtml=`<button class="btn btn-ghost btn-xs btn-full" onclick="activateTheme('${t.id}')" style="border-color:${accent}30;background:${accent}14;color:${accent}"><i class="fa-solid fa-play"></i> চালু করো <span style="font-size:.62rem;opacity:.8">• ${timeLeft}</span></button>`;
+    } else {
+      // rent CTA — visually appealing with gradient if canRent
+      const btnCls = canRent ? 'btn-accent' : 'btn-ghost';
+      const rentTxt = isDefault ? 'চালু করো' : `ভাড়া নাও — ${t.price} 🟡`;
+      actionHtml=`<button class="btn ${btnCls} btn-xs btn-full" ${canRent?'':'disabled'} onclick="rentTheme('${t.id}')" style="${canRent?`background:linear-gradient(135deg, ${accent} 0%, ${accent2} 100%);color:#000;border:none;box-shadow:0 4px 14px ${accent}33`:''}"><i class="fa-solid fa-key"></i> ${rentTxt}</button>`;
+      if(!canRent && !isDefault) actionHtml+=`<div style="font-size:.62rem;color:var(--danger);text-align:center;margin-top:4px">${t.price-coins} 🟡 কম আছে</div>`;
+    }
+
+    // premium preview — clean, no badge overlap, mock app UI
+    return `<div class="shop-item ${rented?'rented':''} ${active?'active-theme':''}">
+      <div class="shop-preview" style="background:${t.preview}">
+        <div class="shop-rent-badge ${isDefault?'shop-rent-free':badgeCls}">${t.badge}</div>
+        <div class="shop-preview-content">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span class="shop-preview-dot" style="background:${accent};box-shadow:0 0 12px ${accent}"></span>
+            <div class="shop-preview-mock" style="flex:1; max-width:84px; background:rgba(255,255,255,0.92)"></div>
+            <div style="width:22px; height:7px; border-radius:999px; background:${accent2}; opacity:.85"></div>
+          </div>
+          <div class="shop-preview-mock2"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+            <div style="height:18px;border-radius:9px;background:rgba(255,255,255,0.96); box-shadow:0 1px 6px rgba(0,0,0,0.14)"></div>
+            <div style="height:18px;border-radius:9px;background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); backdrop-filter:blur(4px)"></div>
+          </div>
+        </div>
+        <div style="position:absolute; right:-10px; top:-10px; width:72px; height:72px; border-radius:50%; background:radial-gradient(circle, ${accent}28 0%, transparent 68%); filter:blur(10px); pointer-events:none; z-index:0"></div>
+        <div style="position:absolute; left:-12px; bottom:-14px; width:56px; height:56px; border-radius:50%; background:radial-gradient(circle, ${accent2}22 0%, transparent 68%); filter:blur(10px); pointer-events:none; z-index:0"></div>
+      </div>
+      <div style="padding:14px 14px 12px; display:flex; flex-direction:column; gap:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-weight:900;font-size:.92rem;letter-spacing:-.01em">${t.name}</div>
+          <span style="font-size:.62rem;font-weight:700;color:var(--muted);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);padding:2px 7px;border-radius:999px">${rentLabel}</span>
+        </div>
+        ${actionHtml}
+        ${!rented && !isDefault ? `<div style="font-size:.62rem;color:var(--muted);text-align:center;line-height:1.3">মেয়াদ শেষে auto revert • Live preview দেখতে ভাড়া নাও</div>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
-window.buyTheme=async function(themeId,price){
-  if(getTotalCoins()<price){ showToast('পর্যাপ্ত কয়েন নেই'); return; }
+window.rentTheme=async function(themeId){
+  const theme=SHOP_THEMES.find(t=>t.id===themeId);
+  if(!theme) return;
+  if(getTotalCoins()<theme.price){ showToast(`পর্যাপ্ত কয়েন নেই — ${theme.price-theme.price} 🟡`); showToast('পর্যাপ্ত কয়েন নেই'); return; }
+  if(!confirm(`${theme.name} — ${theme.badge} ভাড়া নেবে?\n${theme.price} 🟡 কাটবে`)) return;
   try{
-    showSync('busy','⏳...');
-    await dbAddPurchase(currentUser.username, themeId, null);
+    showSync('busy','⏳ ভাড়া হচ্ছে…');
+    // calculate expiry: from now or extend existing
+    let base=Date.now();
+    const existing=myPurchases.filter(p=>p.item_id===themeId && p.expires_at).map(p=>new Date(p.expires_at).getTime()).filter(t=>t>base);
+    if(existing.length) base=Math.max(...existing);
+    const expiresAt=new Date(base + theme.rentDays*24*60*60*1000).toISOString();
+    await dbAddPurchase(currentUser.username, themeId, expiresAt);
     myPurchases=await dbGetPurchases(currentUser.username);
-    await dbUpdateCoins(currentUser.id, getTotalCoins());
+    // coins are computed from xpHistory, but we need to deduct: purchases reduce getTotalCoins automatically via spent
+    // no need to update users.coins, but refresh
     activateTheme(themeId);
     renderShop(); updateSidebar(); updateStats();
-    showSync('ok','✓'); showToast(`${SHOP_THEMES.find(t=>t.id===themeId)?.name} কেনা হয়েছে! ✓`);
-  }catch(e){ showSync('err','✗'); showToast('কেনা ব্যর্থ'); }
+    showSync('ok','✓'); showToast(`✓ ${theme.name} — ${theme.badge} ভাড়া সফল!`);
+  }catch(e){ showSync('err','✗'); showToast('ভাড়া ব্যর্থ: '+(e.message||'')); }
 }
+window.buyTheme=window.rentTheme; // alias for old calls
 window.activateTheme=async function(themeId){
+  // block activating expired rent
+  if(themeId!=='theme_default'){
+    const hasRent=myPurchases.some(p=>p.item_id===themeId && p.expires_at && new Date(p.expires_at).getTime()>Date.now());
+    if(!hasRent){ showToast('মেয়াদ শেষ — আবার ভাড়া নাও'); renderShop(); return; }
+  }
   applyTheme(themeId);
   try{ await dbSetActiveTheme(currentUser.username, themeId); }catch(e){}
-  renderShop(); showToast('থিম পরিবর্তন হয়েছে ✓');
+  renderShop(); showToast('থিম চালু ✓ — ' + (SHOP_THEMES.find(t=>t.id===themeId)?.name||''));
 }
 
 /* ================= CUSTOM TIME ================= */
@@ -3009,5 +3158,5 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fc0918fce9b8f9',t:'MTc5MDE5MjU3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
