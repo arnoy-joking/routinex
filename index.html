@@ -3187,7 +3187,7 @@ window.buildAILog=async function(days){
       `Notes: XP = sum of completed slot XP (no cap). Study slots give 10 coins/hour. Day resets at 5 AM. ✓ done, ✗ missed. (Nh) = study time.`,
       `Format: MM-DD Weekday | XP | study time | done/total slots | ✓ done | ✗ missed | topic`,
       ''
-    ];
+    ].concat(routineBrief(r), ['', '## Daily log']);
     const fin=lines.map(x=>{ if(!x.startsWith('~|')) return x; const [,n,s,e]=x.split('|'); return +n>1? `${s}..${e} | no data (${n} days)` : `${s} | no data`; });
     out.textContent=head.concat(fin).join('\n');
     btn.style.display='';
@@ -3195,6 +3195,25 @@ window.buildAILog=async function(days){
     out.textContent='লোড ব্যর্থ — আবার চেষ্টা করো';
   }
 };
+function shortT(s){
+  const [h,m,ap]=parseT(s||'');
+  return h+(m?':'+String(m).padStart(2,'0'):'')+(ap==='PM'?'p':'a');
+}
+function routineBrief(r){
+  if(!r) return ['## Routine','none'];
+  const f=sl=>`${shortT(sl.start)}-${shortT(sl.end)} ${sl.title} [${sl.category||'other'},${sl.xp||0}xp]`;
+  const out=['## Routine ('+(r.type==='weekly'?'weekly, slot = time title [category,xp]':'same every day, slot = time title [category,xp]')+')'];
+  if(r.type==='weekly'){
+    const N={sat:'Sat',sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri'};
+    WEEK_DAYS.forEach(d=>{
+      const s=(r.weeklySlots&&r.weeklySlots[d])||[];
+      out.push(`${N[d]}: ${s.length? s.map(f).join('; ') : 'off'}`);
+    });
+  } else {
+    out.push((r.slots||[]).map(f).join('; ')||'empty');
+  }
+  return out;
+}
 function fmtMin(m){
   m=Math.round(m||0);
   if(m<=0) return '0';
@@ -3255,5 +3274,5 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4f2110dc96b92bc',t:'MTc5Mjc3MjQwMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
