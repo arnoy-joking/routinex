@@ -782,6 +782,20 @@ select.inp{cursor:pointer}
     </div>
 
     <div class="card" style="padding:16px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <div style="font-size:.78rem;font-weight:800;letter-spacing:.06em;color:var(--accent);text-transform:uppercase">🤖 AI ডেইলি লগ</div>
+        <div id="ailog-range" style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-xs" data-d="7" onclick="buildAILog(7)">৭ দিন</button>
+          <button class="btn btn-ghost btn-xs" data-d="14" onclick="buildAILog(14)">১৪ দিন</button>
+          <button class="btn btn-ghost btn-xs" data-d="30" onclick="buildAILog(30)">৩০ দিন</button>
+        </div>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px">ছোট, পরিষ্কার লগ — কপি করে যেকোনো AI-কে দাও, সে বুঝে যাবে তুমি কী করেছ।</div>
+      <pre id="ailog-out" style="display:none;white-space:pre-wrap;word-break:break-word;font-size:.68rem;line-height:1.55;color:var(--text);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;max-height:240px;overflow:auto;margin:0 0 10px;font-family:ui-monospace,Menlo,Consolas,monospace"></pre>
+      <button id="ailog-copy" class="btn btn-primary btn-sm btn-full" style="display:none" onclick="copyAILog()"><i class="fa-solid fa-copy"></i> লগ কপি করো</button>
+    </div>
+
+    <div class="card" style="padding:16px;margin-bottom:18px">
       <div style="font-size:.76rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:12px">গত ৩ মাস — প্রতিদিনের XP</div>
       <div id="heatmap-container" style="overflow-x:auto"></div>
       <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:.7rem;color:var(--muted)">কম <div class="heatmap-cell"></div><div class="heatmap-cell" data-level="1"></div><div class="heatmap-cell" data-level="2"></div><div class="heatmap-cell" data-level="3"></div><div class="heatmap-cell" data-level="4"></div> বেশি</div>
@@ -963,7 +977,7 @@ select.inp{cursor:pointer}
     <h3 class="font-display" style="font-size:1.15rem;font-weight:900;margin-bottom:4px" id="custom-slot-name">—</h3>
     <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px">কতক্ষণ পড়েছো? সময় দাও — XP সাথে সাথে যোগ হবে</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div><label style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">ঘণ্টা</label><input id="custom-hours" type="number" min="0" max="12" class="inp" style="text-align:center;font-size:1.1rem;font-weight:800;margin-top:6px" oninput="updateCustomXP()"></div>
+      <div><label style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">ঘণ্টা</label><input id="custom-hours" type="number" min="0" class="inp" style="text-align:center;font-size:1.1rem;font-weight:800;margin-top:6px" oninput="updateCustomXP()"></div>
       <div><label style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">মিনিট</label><input id="custom-minutes" type="number" min="0" max="59" class="inp" style="text-align:center;font-size:1.1rem;font-weight:800;margin-top:6px" oninput="updateCustomXP()"></div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:16px">
@@ -1156,7 +1170,7 @@ function recalcToday(){
       else {
         const rawXP=sl.xp||0;
         const isStudy=sl.category==='study';
-        const slotXP=isStudy?rawXP:Math.min(rawXP,10);
+        const slotXP=rawXP; // no XP cap
         xp+=slotXP;
         if(isStudy){ const hrs=slotDurationHours(sl); coins+=Math.round(hrs*10); }
       }
@@ -2366,7 +2380,7 @@ window.importJSONRoutine = async function(){
         start: sl.start || '07:00 AM',
         end: sl.end || '08:00 AM',
         category: CAT_COLORS[sl.category] ? sl.category : 'other',
-        xp: Number.isFinite(+sl.xp) ? Math.min(Math.max(0, +sl.xp), 5000) : 25
+        xp: Number.isFinite(+sl.xp) ? Math.max(0, +sl.xp) : 25
       }));
     }
     payload = { id:null, name:(parsed.routine_name||'Weekly Routine').slice(0,60), type:'weekly', slots:[], weeklySlots, is_active:true };
@@ -2378,7 +2392,7 @@ window.importJSONRoutine = async function(){
       start: sl.start || '07:00 AM',
       end: sl.end || '08:00 AM',
       category: CAT_COLORS[sl.category] ? sl.category : 'other',
-      xp: Number.isFinite(+sl.xp) ? Math.min(Math.max(0,+sl.xp),5000) : 25
+      xp: Number.isFinite(+sl.xp) ? Math.max(0,+sl.xp) : 25
     }));
     payload = { id:null, name:(parsed.routine_name||'AI Routine').slice(0,60), type:'daily', slots, weeklySlots:{sat:[],sun:[],mon:[],tue:[],wed:[],thu:[],fri:[]}, is_active:true };
   }
@@ -3111,6 +3125,89 @@ window.openUserProfile=async function(username){
 }
 window.closeUserProfile=function(){ closeModal('modal-user-profile'); }
 
+/* ================= AI DAILY LOG (brief, AI-readable) ================= */
+window.buildAILog=async function(days){
+  days=days||7;
+  const out=document.getElementById('ailog-out'), btn=document.getElementById('ailog-copy');
+  out.style.display='block'; out.textContent='লোড হচ্ছে…';
+  document.querySelectorAll('#ailog-range button').forEach(b=> b.style.color= (+b.dataset.d===days)?'var(--accent)':'');
+  try{
+    const u=currentUser.username;
+    const logs=await dbGetLogs(u);
+    const byDate={}; (logs||[]).forEach(l=>{ byDate[l.date]=l; });
+    let topics={};
+    try{
+      const {data}=await sb.from('user_meta').select('key,value').eq('username',u.toLowerCase()).like('key','topic_%');
+      (data||[]).forEach(r=>{ if(r.value) topics[r.key.replace('topic_','')]=r.value; });
+    }catch(e){}
+    const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const range=lastNDays(days);
+    let totXP=0, totStudyMin=0, active=0, best=0;
+    const lines=[];
+    range.forEach(date=>{
+      const l=byDate[date];
+      const wd=WD[new Date(date+'T00:00:00').getDay()];
+      const md=date.slice(5);
+      if(!l){ const last=lines[lines.length-1]; if(last&&last.startsWith('~')){ const n=+last.split('|')[1]+1; lines[lines.length-1]=`~|${n}|${last.split('|')[2]}|${md}`; } else lines.push(`~|1|${md}|${md}`); return; }
+      const comp=l.completed_slots||{};
+      const slots=getSlotsForDay(getWeekdayKeyForDate(date))||[];
+      const known=new Set(slots.map(s=>s.id));
+      const done=[], missed=[];
+      let studyMin=0;
+      slots.forEach(sl=>{
+        const c=comp[sl.id];
+        if(c){
+          let label=sl.title;
+          if(sl.category==='study'){
+            let m=0;
+            if(typeof c==='object' && c.custom) m=c.minutes||0;
+            else { try{ m=Math.round(slotDurationHours(sl)*60); }catch(e){} }
+            studyMin+=m;
+            label+=` (${fmtMin(m)})`;
+          }
+          done.push(label);
+        } else missed.push(sl.title);
+      });
+      // legacy/unknown slot ids still counted
+      const extra=Object.keys(comp).filter(k=>comp[k] && !known.has(k) && !k.startsWith('_')).length;
+      if(extra) done.push(`+${extra} other`);
+      const xp=l.xp||0;
+      totXP+=xp; totStudyMin+=studyMin; if(xp>0) active++; if(xp>best) best=xp;
+      let line=`${md} ${wd} | ${xp}xp | study ${fmtMin(studyMin)} | ${done.length-(extra?1:0)}/${slots.length||'?'}`;
+      line+=` | ✓ ${done.length?done.join(', '):'none'}`;
+      if(missed.length) line+=` | ✗ ${missed.join(', ')}`;
+      if(topics[date]) line+=` | topic: ${topics[date]}`;
+      lines.push(line);
+    });
+    const r=activeRoutine;
+    const head=[
+      `# RoutineX log — ${u}`,
+      `Routine: ${r?r.name:'none'} (${r?r.type:'-'}) | Last ${days} days: ${range[0]} → ${range[range.length-1]} | Generated: ${todayKey()}`,
+      `Summary: ${totXP} XP (avg ${Math.round(totXP/days)}/day, best ${best}) | study ${fmtMin(totStudyMin)} | active ${active}/${days} days | streak ${calcStreak()} | total XP ${getTotalXP()} | coins ${getTotalCoins()}`,
+      `Notes: XP = sum of completed slot XP (no cap). Study slots give 10 coins/hour. Day resets at 5 AM. ✓ done, ✗ missed. (Nh) = study time.`,
+      `Format: MM-DD Weekday | XP | study time | done/total slots | ✓ done | ✗ missed | topic`,
+      ''
+    ];
+    const fin=lines.map(x=>{ if(!x.startsWith('~|')) return x; const [,n,s,e]=x.split('|'); return +n>1? `${s}..${e} | no data (${n} days)` : `${s} | no data`; });
+    out.textContent=head.concat(fin).join('\n');
+    btn.style.display='';
+  }catch(e){
+    out.textContent='লোড ব্যর্থ — আবার চেষ্টা করো';
+  }
+};
+function fmtMin(m){
+  m=Math.round(m||0);
+  if(m<=0) return '0';
+  const h=Math.floor(m/60), r=m%60;
+  return h? (r? `${h}h${r}m` : `${h}h`) : `${r}m`;
+}
+window.copyAILog=function(){
+  const text=document.getElementById('ailog-out').textContent;
+  const done=()=>{ const b=document.getElementById('ailog-copy'); const o=b.innerHTML; b.innerHTML='<i class="fa-solid fa-check"></i> কপি হয়েছে!'; setTimeout(()=>b.innerHTML=o,1800); };
+  const fb=()=>{ const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); done();}catch(e){showToast('কপি ব্যর্থ');} document.body.removeChild(ta); };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(fb); else fb();
+};
+
 /* ================= MODAL HELPERS ================= */
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
@@ -3158,5 +3255,5 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fc0918fce9b8f9',t:'MTc5MDE5MjU3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
