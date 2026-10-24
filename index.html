@@ -249,6 +249,11 @@ select.inp{cursor:pointer}
 .slot-card:hover{border-color:rgba(255,255,255,0.13); background:#21212a; transform:translateY(-1px) translateZ(0)}
 .slot-card.done{border-color:rgba(0,229,160,0.28); background:rgba(0,229,160,0.07)}
 .slot-card.done::before{background:var(--accent)!important}
+.slot-note{display:flex;align-items:center;gap:7px;margin-top:9px;padding:7px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;cursor:text}
+.slot-note:focus-within{border-color:var(--accent);background:rgba(255,255,255,0.06)}
+.slot-note i{font-size:.68rem;color:var(--muted);flex-shrink:0}
+.slot-note input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font:inherit;font-size:.78rem;padding:0}
+.slot-note input::placeholder{color:var(--muted2,#6b6b78)}
 /* stat grid premium — remove heavy radial glow */
 .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; contain:layout}
 @media(min-width:768px){.stat-grid{grid-template-columns:repeat(4,1fr); gap:14px}}
@@ -1694,6 +1699,20 @@ function switchDashView(mode){
     else renderTimeline();
   });
 }
+/* ===== Study notes: stored as a hidden "_notes" comment key inside completed_slots =====
+   completed_slots = { slotId: true|{custom..}, _notes: { slotId: "what I studied" } }
+   Old logs have no _notes → untouched. No DB change; slot logic only reads real slot ids. */
+function getNote(id){ const n=completedSlots&&completedSlots._notes; return (n&&n[id])||''; }
+function noteAttr(id){ return getNote(id).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+let _noteTimer=null;
+window.saveSlotNote=function(id,val){
+  val=(val||'').trim().slice(0,200);
+  if(!completedSlots._notes || typeof completedSlots._notes!=='object') completedSlots._notes={};
+  if(val) completedSlots._notes[id]=val; else delete completedSlots._notes[id];
+  if(!Object.keys(completedSlots._notes).length) delete completedSlots._notes;
+  clearTimeout(_noteTimer);
+  _noteTimer=setTimeout(scheduleSave,500); // debounced, no re-render → typing stays smooth
+};
 function renderTimeline(){
   const cont=document.getElementById('timeline');
   if(!cont) return;
@@ -1730,6 +1749,7 @@ function renderTimeline(){
             </div>
             <div style="font-weight:800;font-size:.98rem;letter-spacing:-.01em;line-height:1.2">${sl.title}</div>
             ${sl.desc?`<div style="font-size:.78rem;color:var(--muted);margin-top:3px;line-height:1.4">${sl.desc}</div>`:''}
+            ${isStudy?`<label class="slot-note" onclick="event.stopPropagation()"><i class="fa-solid fa-pen"></i><input type="text" maxlength="200" placeholder="কী পড়লে? (যেমন: Physics ch-3, MCQ ৫০টি)" value="${noteAttr(sl.id)}" oninput="saveSlotNote('${sl.id}',this.value)" onclick="event.stopPropagation()" onkeydown="event.stopPropagation()"></label>`:''}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
             <span style="font-size:.72rem;font-weight:800;padding:4px 10px;border-radius:999px;background:${done?'var(--accent)':'rgba(255,255,255,0.06)'};color:${done?'#000':'var(--muted)'};border:1px solid ${done?'var(--accent)':'rgba(255,255,255,0.08)'}">${done?'✓ সম্পন্ন': xpLabel}</span>
@@ -3165,8 +3185,13 @@ window.buildAILog=async function(days){
             studyMin+=m;
             label+=` (${fmtMin(m)})`;
           }
+          const nt=(comp._notes&&comp._notes[sl.id])||'';
+          if(nt) label=label.replace(/\)$/, ': '+nt+')').replace(/^([^()]*)$/, '$1 ('+nt+')');
           done.push(label);
-        } else missed.push(sl.title);
+        } else {
+          const nt=(comp._notes&&comp._notes[sl.id])||'';
+          missed.push(nt? `${sl.title} (${nt})` : sl.title);
+        }
       });
       // legacy/unknown slot ids still counted
       const extra=Object.keys(comp).filter(k=>comp[k] && !known.has(k) && !k.startsWith('_')).length;
@@ -3184,7 +3209,7 @@ window.buildAILog=async function(days){
       `# RoutineX log — ${u}`,
       `Routine: ${r?r.name:'none'} (${r?r.type:'-'}) | Last ${days} days: ${range[0]} → ${range[range.length-1]} | Generated: ${todayKey()}`,
       `Summary: ${totXP} XP (avg ${Math.round(totXP/days)}/day, best ${best}) | study ${fmtMin(totStudyMin)} | active ${active}/${days} days | streak ${calcStreak()} | total XP ${getTotalXP()} | coins ${getTotalCoins()}`,
-      `Notes: XP = sum of completed slot XP (no cap). Study slots give 10 coins/hour. Day resets at 5 AM. ✓ done, ✗ missed. (Nh) = study time.`,
+      `Notes: XP = sum of completed slot XP (no cap). Study slots give 10 coins/hour. Day resets at 5 AM. ✓ done, ✗ missed. (Nh: text) = study time + what I studied.`,
       `Format: MM-DD Weekday | XP | study time | done/total slots | ✓ done | ✗ missed | topic`,
       ''
     ].concat(routineBrief(r), ['', '## Daily log']);
@@ -3274,5 +3299,5 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4f2110dc96b92bc',t:'MTc5Mjc3MjQwMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4fa9ec7df16aab8',t:'MTc5Mjg2MjA5MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
